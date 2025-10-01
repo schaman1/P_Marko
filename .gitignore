@@ -1,0 +1,5 @@
+#Ce fichier peret a git d'ignorer ce qu'il y a dans ces fichiers ci dessous.
+# = comme ça ont peut mettre nos infos perso dans ce fichier secret.env sans
+#qu'il soit partagé avec un git push
+
+secret.env
