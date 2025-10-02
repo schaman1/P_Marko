@@ -1,0 +1,10 @@
+Ce fichier contient uniquement les bibliothèques nécessaires à faire tourner ton jeu.
+
+Exemple :
+
+pygame==2.5.2
+numpy>=1.24.0
+
+Tu installes les dépendances avec :
+
+pip install -r requirements.txt
