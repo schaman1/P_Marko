@@ -3,3 +3,6 @@
 #qu'il soit partagé avec un git push
 
 secret.env
+
+__pycache__/
+*.py[cod]
