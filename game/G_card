@@ -1,0 +1,1 @@
+player = pygame.image.load('../images/2_coeur.jpg').convert()
