@@ -1,4 +1,5 @@
 # P_Marko
+Voir les dernières modifications du projet :  [CHANGELOG.md](CHANGELOG.md).  
 
 __**Etape 1 : Installer git**__
 Aller sur : [Git](https://git-scm.com/downloads)  
