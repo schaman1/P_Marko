@@ -1,29 +1,10 @@
 # CHANGELOG
 
-### Initial.2 - 2025-220-05
+### [0.0.1] - 2025-10-05
+- menu
+
+### Initial.2 - 2025-10-05
 - Structure + menu
 
 ### Initial - 2025-10-02
 - Création des fichiers de base au gamedev
-
->ex :
-## [1.2.0] - 2025-10-01
-### Ajouté
-- Nouvelle interface utilisateur
-- Support du format JSON pour l'import
-
-### Corrigé
-- Bug sur la pagination des résultats
-- Correction des fautes dans la documentation
-
-## [1.1.1] - 2025-09-15
-### Corrigé
-- Problème de compatibilité avec Python 3.11
-
-## [1.1.0] - 2025-09-01
-### Ajouté
-- Intégration avec API externe
-
-## [1.0.0] - 2025-08-10
-### Initial
-- Version stable initiale
