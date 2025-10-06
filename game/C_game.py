@@ -7,12 +7,15 @@ class Game:
         self.screen = pygame.display.set_mode((pygame.display.Info().current_w, pygame.display.Info().current_h),pygame.FULLSCREEN | pygame.SCALED)
         self.screenSize = (self.screen.get_width(),self.screen.get_height())
 
+        #ecriture
+        self.font = pygame.font.SysFont(None, 48)
+
         #Set up the clock for managing the frame rate
         self.fps = 60
         self.fpsClock = pygame.time.Clock()
         self.dt = 0 # Delta time between frames = devra faire *dt pour les mouvements
 
-        self.state = State(self.screen,self.screenSize)
+        self.state = State(self.screen,self.screenSize,self.font)
         self.mod = "menu" #menu/reglage/game
 
     def run(self):
