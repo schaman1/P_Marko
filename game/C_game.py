@@ -1,5 +1,7 @@
 import pygame
 from etat import State
+from C_inGame import InGame
+from C_card import Card
 
 class Game:
     def __init__(self):
@@ -15,7 +17,16 @@ class Game:
         self.fpsClock = pygame.time.Clock()
         self.dt = 0 # Delta time between frames = devra faire *dt pour les mouvements
 
-        self.state = State(self.screen,self.screenSize,self.font)
+        self.cards = [] #liste des cartes en jeu
+        for i in range (1,14):
+            self.cards.append(Card(i,"C"))
+            self.cards.append(Card(i,"C")) #mettre K
+            self.cards.append(Card(i,"C")) #T
+            self.cards.append(Card(i,"C")) #P
+
+        self.Game = InGame(self.screen,self.screenSize,self.font,self.cards)
+
+        self.state = State(self.screen,self.screenSize,self.font,self.Game)
         self.mod = "menu" #menu/reglage/game
 
     def run(self):
@@ -29,8 +40,11 @@ class Game:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if self.mod == "menu":
                         if self.state.play.collidepoint(event.pos):
-                            print("Play button clicked")
-                        elif self.state.parametre.collidepoint(event.pos):
+                            #("Play button clicked")
+                            self.Game.createHand()#initialise the hand of the player
+                            
+                            self.mod = "game"
+                        elif self.state.settings.collidepoint(event.pos):
                             print("Parametre button clicked")
                         elif self.state.quit.collidepoint(event.pos):
                             #("Quit button clicked")
