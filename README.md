@@ -10,7 +10,7 @@ __**Etape 2 : Importer et aller dans le repo**__
 Dans le cmd ecrire :  
 
 `git clone https://github.com/schaman1/P_Marko.git`  
-`cd P_Marko`  
+`cd P_Marko`    
 
 <br>
 

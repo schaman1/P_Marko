@@ -30,7 +30,7 @@ class Game:
                         elif self.state.parametre.collidepoint(event.pos):
                             print("Parametre button clicked")
                         elif self.state.quit.collidepoint(event.pos):
-                            print("Quit button clicked")
+                            #("Quit button clicked")
                             running = False
 
     
