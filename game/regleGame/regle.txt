@@ -1,0 +1,10 @@
+But : avoir le plus d'argent
+
+Style : Poker
+
+Jeu dure 10 tours
+
+regle : a la fin de chaque manche de poker, gagne de l'argent et peux en dépenser pour avoir une augmente.
+Ex : carte vaut comme deviens un 2 etc
+
+Tout les 3 tours : carte bonus arrive
