@@ -1,5 +1,6 @@
 import pygame
 import math
+from D_CreateCards import cards
 
 class Card:
     def __init__(self,power,color):
@@ -11,7 +12,7 @@ class Card:
         self.angle = 0 #it a ne pas garder
 
         # Load the image
-        self.image = pygame.image.load(f"assets/cards/{self.cardName}.png").convert_alpha()
+        self.image = cards[self.cardName]
         self.image = pygame.transform.scale(self.image, (200, 300))  # Resize the image to a standard size
         self.rot_img = self.image
 

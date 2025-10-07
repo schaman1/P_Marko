@@ -5,6 +5,8 @@ Exemple :
 pygame==2.5.2
 numpy>=1.24.0
 
+Pillow ...
+
 Tu installes les dépendances avec :
 
 pip install -r requirements.txt

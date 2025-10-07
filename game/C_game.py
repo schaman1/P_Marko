@@ -18,11 +18,12 @@ class Game:
         self.dt = 0 # Delta time between frames = devra faire *dt pour les mouvements
 
         self.cards = [] #liste des cartes en jeu
+
         for i in range (1,14):
             self.cards.append(Card(i,"C"))
-            self.cards.append(Card(i,"C")) #mettre K
-            self.cards.append(Card(i,"C")) #T
-            self.cards.append(Card(i,"C")) #P
+            self.cards.append(Card(i,"K")) #mettre carreau
+            self.cards.append(Card(i,"T")) #Trefle
+            self.cards.append(Card(i,"P")) #Pique
 
         self.Game = InGame(self.screen,self.screenSize,self.font,self.cards)
 
