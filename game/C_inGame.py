@@ -10,27 +10,45 @@ class InGame:
         self.deckSize = 8
 
         self.deck = deck
-        self.availableCards = self.deck  # Cartes disponibles dans le jeu
+        self.availableCards = list(deck)  # Cartes disponibles dans le jeu
         self.playerHand = []  # Cartes en main du joueur
             
     def createHand(self):
-        """Create the hand of the player"""
+        """Crée la main du joueur avec effet éventail réaliste"""
         shuffle(self.availableCards)
 
+        # Pivot commun (point depuis lequel on "tient" les cartes)
+        pivot = (self.Size[0] / 2, self.Size[1] * 1.15)
+
+        # Configuration de l’éventail
+        angle_start = 30                     # angle de la première carte (à gauche)
+        angle_step = -60 / (self.deckSize - 1) # écart d’angle entre les cartes
+        spread = 200                          # largeur de l’éventail (décalage horizontal)
+        lift = 30                             # petit décalage vertical pour la courbe
+
         for i in range(self.deckSize):
+            card = self.availableCards.pop()
 
-            card = self.availableCards.pop()  # Retire une carte du deck
-            card.pos = (self.Size[0]*(0.20 + i/(self.deckSize*2)), (self.Size[1]*0.6 - self.Size[1]*(-abs(3.5-i))/60))
-            card.angle = 32.5 - i*9
-            card.rotate_img()
-            #card.image = pygame.transform.rotate(card.image, 32.5 - i*9)  # Applique une rotation à la carte pour l'effet d'éventail
+            # Calcul de l’angle propre à cette carte
+            card.angle = angle_start + i * angle_step
 
-            self.playerHand.append(card)  # Ajoute la carte à la main du joueur avec son index
+            # Décalage latéral pour étaler les cartes
+            offset_x = (i - (self.deckSize - 1) / 2) * (spread / self.deckSize)
+            offset_y = -abs(i - (self.deckSize - 1) / 2) * lift / (self.deckSize / 2)
+
+            # Position de base avant rotation
+            base_pos = (pivot[0] + offset_x, self.Size[1] * 0.65 + offset_y)
+            card.pos = base_pos
+
+            # Appliquer la rotation autour du pivot
+            card.rotate_around_pivot(pivot, card.angle)
+
+            self.playerHand.append(card)
 
     def drawPlayerHand(self):
-        """Affiche les cartes du player"""
-        
-        for card in self.playerHand :
+        """Affiche toutes les cartes du joueur"""
+        # Pour un bel ordre d’affichage, on dessine de la carte la plus inclinée à la plus droite
+        for card in sorted(self.playerHand, key=lambda c: c.angle):
             card.draw(self.screen)
 
     def drawAll(self):
