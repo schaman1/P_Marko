@@ -1,7 +1,6 @@
 import socket, json
+from config import ip as server_ip
 
-# ⚠️ Remplace cette IP par celle du serveur !
-server_ip = '10.3.137.146'
 port = 5000
 
 dic = {}

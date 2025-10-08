@@ -1,8 +1,9 @@
 import socket, threading
+from config import ip as server_ip
 
 def start_server(port):
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.bind(('10.3.137.146', port))
+    server.bind((server_ip, port))
     server.listen()
     print(f"Serveur en écoute sur le port {port}...")
     #prompt_cmd = threading.Thread(target=game)
