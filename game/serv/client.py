@@ -1,5 +1,4 @@
 import socket, json, threading
-from config import ip as server_ip
 
 port = 5000
 
@@ -20,9 +19,11 @@ def reception_server():
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Connexion au serveur
-#ip = input(f"IP")
-port = int(input(f"Port"))
-client.connect((server_ip, port))
+ip = input("ip : ")
+if ip=="":
+    ip="localhost"
+port = int(input("Port"))
+client.connect((ip, port))
 print("Connecté au serveur")
 
 # Démarrer un thread pour recevoir les messages du serveur
