@@ -12,7 +12,7 @@ client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 #ip = input(f"IP")
 port = int(input(f"Port"))
 client.connect((server_ip, port))
-print("✅ Connecté au serveur")
+print("Connecté au serveur")
 
 def reception_server():
     while True:
@@ -22,7 +22,7 @@ def reception_server():
         # Réception de la réponse
         data = json.loads(client.recv(1024).decode())  #reception des datas
 
-        print(f"📥 Réponse du serveur : {data["pseudo"]} ta force : {data["force"]}")
+        print(f"Réponse du serveur : {data["pseudo"]} ta force : {data["force"]}")
 
 # Envoi d'un message
 dic["pseudo"] = input("Ton pseudo: ")
