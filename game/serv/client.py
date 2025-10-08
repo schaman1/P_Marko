@@ -6,11 +6,13 @@ dic = {}
 
 def reception_server():
     while True:
-        data = client.recv(1024).decode()
+
+        data = json.loads(client.recv(1024).decode())  #reception des datas
+        
         if not data:
             break
         # Réception de la réponse
-        data = json.loads(client.recv(1024).decode())  #reception des datas
+
 
         print(f"Réponse du serveur : {data["pseudo"]} ta force : {data["force"]}")
 
@@ -22,12 +24,13 @@ client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 ip = input("ip : ")
 if ip=="":
     ip="localhost"
+
 port = int(input("Port"))
 client.connect((ip, port))
 print("Connecté au serveur")
 
 # Démarrer un thread pour recevoir les messages du serveur
-threading.Thread(target=reception_server, daemon=True).start()
+threading.Thread(target=reception_server).start()
 
 # Envoi d'un message
 while True:
