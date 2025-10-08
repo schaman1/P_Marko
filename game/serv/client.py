@@ -29,13 +29,12 @@ print("Connecté au serveur")
 threading.Thread(target=reception_server, daemon=True).start()
 
 # Envoi d'un message
-dic["pseudo"] = input("Ton pseudo: ")
-dic["force"] = int(input("ta force"))
+while True:
+    dic["pseudo"] = input("Ton pseudo: ")
+    dic["force"] = int(input("ta force"))
 
-client.send(json.dumps(dic).encode())
-print("Message envoyé")
-
-
+    client.send(json.dumps(dic).encode())
+    print("Message envoyé")
 
 # Fermer la connexion
 client.close()
