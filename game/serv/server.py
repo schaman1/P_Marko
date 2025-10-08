@@ -27,7 +27,7 @@ def handle_client(client_socket, id):
         data = client_socket.recv(1024).decode()
         if not data:
             break
-        print(f"📩 Reçu : {data}")
+        print(f"Reçu : {data}")
 
         # Envoyer le message à tous les clients encore connectés
         for client in lClient:
@@ -46,14 +46,14 @@ def start_server(port):
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind((host, port)) #Lance le serveur
     server.listen()
-    print(f"✅ Serveur en écoute sur le port {port}...")
+    print(f"Serveur en écoute sur le port {port}...")
 
     while True:
 
         client_socket, addr = server.accept()
         lClient.append(client_socket)
 
-        print(f"🤝 Connexion de {addr}")
+        print(f"Connexion de {addr}")
 
         client_handler = threading.Thread(target=handle_client, args=(client_socket,id))
         client_handler.start()
