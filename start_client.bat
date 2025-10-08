@@ -3,5 +3,5 @@ echo installing libraries...
 pip install -r requirement.txt
 cls
 echo starting server
-python game/serv/server.py
+python game/serv/client.py
 pause
