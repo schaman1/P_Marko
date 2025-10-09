@@ -34,23 +34,37 @@ class Game:
                     running = False
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    if self.mod == "menu":
 
-                        if self.state.play.collidepoint(event.pos):
+                    if self.mod == "menu":
+                        if self.state.settings.rect.collidepoint(event.pos):
                             #("Play button clicked")
                             #self.Game.createHand()#initialise the hand of the player
                             
-                            self.mod = "game"
-                            print("game !")
+                            self.mod = "settings"
+                            print("settings !")
 
-                            threading.Thread(target=self.client.connexion_serveur, args=("localhost", 5000)).start()                           
+                        elif self.state.connexion.rect.collidepoint(event.pos):
+                            print("connexion button clicked")
+                            self.mod = "connexion"
 
-
-                        elif self.state.settings.collidepoint(event.pos):
-                            print("Parametre button clicked")
-                        elif self.state.quit.collidepoint(event.pos):
+                        elif self.state.quit.rect.collidepoint(event.pos):
                             #("Quit button clicked")
                             running = False
+
+                    elif self.mod == "connexion":
+
+                        if self.state.menu.rect.collidepoint(event.pos):
+                            self.mod = "menu"
+                    
+                    elif self.mod == "settings":
+
+                        if self.state.menu.rect.collidepoint(event.pos):
+                            self.mod = "menu"
+
+                        #if self.state.play.rect.collidepoint(event.pos):
+                            #self.mod = "game"
+                            #threading.Thread(target=self.client.connexion_serveur, args=("localhost", 5000)).start()                           
+
 
     
             #Affiche ce qu'il doit être affiché en fonction du mode (reglage/menu/game)

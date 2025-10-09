@@ -1,5 +1,6 @@
 import pygame
 from texture import color
+from C_button import Button
 
 class State:
 
@@ -9,32 +10,54 @@ class State:
         self.font = font
         self.Game = Game
 
-        self.play = pygame.Rect(self.Size[0]/3, 2*self.Size[1]/18, self.Size[0]/3, self.Size[1]/6)
-        self.settings = pygame.Rect(self.Size[0]/3, 7*self.Size[1]/18, self.Size[0]/3, self.Size[1]/6)
-        self.quit = pygame.Rect(self.Size[0]/3, 12*self.Size[1]/18, self.Size[0]/3, self.Size[1]/6)
+        self.connexion = Button(pygame.Rect(self.Size[0]/3, 2*self.Size[1]/18, self.Size[0]/3, self.Size[1]/6),color["GREEN"],"Connexion",self.font)
+        self.settings = Button(pygame.Rect(self.Size[0]/3, 7*self.Size[1]/18, self.Size[0]/3, self.Size[1]/6),color["GREY"],"Reglage",self.font)
+        self.quit = Button(pygame.Rect(self.Size[0]/3, 12*self.Size[1]/18, self.Size[0]/3, self.Size[1]/6),color["RED"],"Quit",self.font)
+
+        self.play = Button(pygame.Rect(self.Size[0]/3, 2*self.Size[1]/18, self.Size[0]/3, self.Size[1]/6),color["GREEN"],"Play",self.font)
+        self.ip = Button(pygame.Rect(self.Size[0]/3, 7*self.Size[1]/18, self.Size[0]/3, self.Size[1]/6),color["GREY"],"Ip:port",self.font)
+
+        self.menu = Button(pygame.Rect(self.Size[0]*2.5/6, 15.5*self.Size[1]/18, self.Size[0]/6, self.Size[1]/12),color["RED"],"Menu",self.font)
 
         #dic boutton menu : 1= rect, 2=couleur, 3=texte
-        self.dicMenu = {"play": (self.play,color["GREEN"],"Play"),
-                        "ip": (self.settings,color["GREY"],"Ip"),
-                        "quit": (self.quit,color["RED"],"Quit")}
+        self.dicMenu = {"connexion": self.connexion,
+                        "reglage": self.settings,
+                        "quit": self.quit}
+        
+        self.dicConnexion = {"ip": self.ip,
+                            "play": self.play,
+                            "menu": self.menu}
+        
+        self.dicSettings = {"menu": self.menu}
 
     def a_state(self,state):
 
+        self.screen.fill(color["BLACK"])
+
         if state == "menu":
             
-            for rect in self.dicMenu.values():
-                pygame.draw.rect(self.screen,rect[1],rect[0],border_radius=10)
+            for btn in self.dicMenu.values():
 
-            # Centrer le texte dans le rectangle
-                text = self.font.render(rect[2], True, color["BLACK"])  # True = anti-aliasing
-                text_rect = text.get_rect(center=rect[0].center)
-                self.screen.blit(text, text_rect)
-        
+                btn.draw(self.screen)
+
         elif state == "game":
 
+            None
             #inGame_PostFase to do (choose skin, map, etc)
-            self.screen.fill(color["BLACK"])
+            #self.screen.fill(color["BLACK"])
             #.drawAll()
+
+        elif state == "connexion":
+
+            for btn in self.dicConnexion.values():
+
+                btn.draw(self.screen)
+
+        elif state == "settings":
+
+            for btn in self.dicSettings.values():
+
+                btn.draw(self.screen)
 
         else : 
             pass
