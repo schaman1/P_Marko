@@ -20,10 +20,7 @@ def handle_client(client_socket, id):
 
     client_socket.close()
 
-def start_server(port):
- 
-    host = '0.0.0.0'
-
+def start_server(host,port):
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind((host, port)) #Lance le serveur
     server.listen()
@@ -40,5 +37,17 @@ def start_server(port):
         client_handler.start()
 
     server.close()
-
-start_server(port)
+print("Quel mode de serveur voulez vous lancer ?\n1. Serveur Local\n2. Serveur sur le réseau local\n3. Serveur sur internet (ngrok)")
+rep=input("-> ")
+if rep=="3":
+    port=5000
+    ip="localhost"
+    os.system("start ngrok tcp 5000")
+elif rep=="2":
+    ip="0.0.0.0"
+    port=int(input("Quel port : "))
+else:
+    ip="localhost"
+    port=int(input("Quel port : "))
+clear()
+start_server(ip,port)
