@@ -1,7 +1,14 @@
-import socket, threading
+import socket, threading, os
 
 port = 5000
 lClient = []
+
+def clear():
+    if os.name == "nt":
+        os.system("cls")
+    else:
+        os.system("clear")
+
 
 def handle_client(client_socket, id):
     while True:
