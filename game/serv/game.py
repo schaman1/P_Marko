@@ -1,4 +1,4 @@
-import pygame
+import pygame, threading
 from state import State
 from client import Client
 #from C_inGame import InGame
@@ -42,8 +42,8 @@ class Game:
                             
                             self.mod = "game"
                             print("game !")
-                            self.client.connexion_serveur("localhost",5000)
-                            
+
+                            threading.Thread(target=self.client.connexion_serveur, args=("localhost", 5000)).start()                           
 
 
                         elif self.state.settings.collidepoint(event.pos):
