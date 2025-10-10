@@ -41,7 +41,12 @@ class Game:
 
                         txt = self.objClicked.dicRect[self.objClicked.id+"_input"]["text"]
 
-                        if event.key == pygame.K_ESCAPE:
+                        if event.key == pygame.K_RETURN:
+                            self.objClicked.dicRect[self.objClicked.id+"_input"]["text"] = txt.replace("|","")
+                            self.mod = self.state.connexion_serv(self.client)
+                            self.objClicked = None
+
+                        elif event.key == pygame.K_ESCAPE:
                             self.objClicked.dicRect[self.objClicked.id+"_input"]["text"] = txt.replace("|","")
                             self.objClicked = None
 
@@ -60,10 +65,14 @@ class Game:
                             #self.Game.createHand()#initialise the hand of the player
 
                             self.state.show_ip.update_text("show_ip",f"ip:port = {self.client.ip}:{5000}")
+                            self.state.start.update_text("start","Lancement du serveur...")
                             
                             threading.Thread(target=start_server, args = ("localhost", 5000)).start()
+                            threading.Thread(target=self.client.connexion_serveur, args=(f"{self.client.ip}:{5000}",)).start()
+                                                        
                             self.mod = "host"
-                            print("Create serv !")
+                            
+                            print("Create serv et connection!")
 
                         elif self.state.connexion.rect.collidepoint(event.pos):
                             print("connexion button clicked")
@@ -85,11 +94,8 @@ class Game:
                             self.objClicked = None
                             self.mod = "menu"
 
-                        elif self.state.play.rect.collidepoint(event.pos):
-                            self.mod = "game"
-                            ip_port = self.state.ip.dicRect[self.state.ip.id+"_input"]["text"][:-1]
-                            print(ip_port)
-                            threading.Thread(target=self.client.connexion_serveur, args=(ip_port,)).start()
+                        elif self.state.start.rect.collidepoint(event.pos):
+                            self.mod = self.state.connexion_serv(self.client)  #Connexion serv
                             self.objClicked = None
 
                         else :  #deselection

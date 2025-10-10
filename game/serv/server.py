@@ -12,7 +12,11 @@ def clear():
 
 def handle_client(client_socket, id):
     while True:
-        data = client_socket.recv(1024).decode()
+        try : 
+            data = client_socket.recv(1024).decode()
+        except : 
+            client_socket.close()
+            
         if not data:
             break
         print(f"Reçu : {data}")

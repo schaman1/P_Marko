@@ -43,3 +43,6 @@ class Button:
     def update_text(self,id,new_text):
         if id in self.dicRect:
             self.dicRect[id]["text"] = new_text
+        
+        else:
+            print(f"Erreur : L'ID '{id}' n'existe pas dans dicRect.")
