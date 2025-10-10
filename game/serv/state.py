@@ -10,8 +10,8 @@ class State:
         self.font = font
         self.Game = Game
 
-        self.connexion = Button(pygame.Rect(self.Size[0]/3, 2*self.Size[1]/18, self.Size[0]/3, self.Size[1]/6),color["GREEN"],"Connexion",self.font,"connexion")
-        self.host = Button(pygame.Rect(self.Size[0]/3, 7*self.Size[1]/18, self.Size[0]/3, self.Size[1]/6),color["GREY"],"Create serv",self.font,"host")
+        self.connexion = Button(pygame.Rect(self.Size[0]/3, 2*self.Size[1]/18, self.Size[0]/3, self.Size[1]/6),color["GREEN"],"Rejoindre une partie",self.font,"connexion")
+        self.host = Button(pygame.Rect(self.Size[0]/3, 7*self.Size[1]/18, self.Size[0]/3, self.Size[1]/6),color["GREY"],"Creer une partie",self.font,"host")
         self.quit = Button(pygame.Rect(self.Size[0]/3, 12*self.Size[1]/18, self.Size[0]/3, self.Size[1]/6),color["RED"],"Quit",self.font,"quit")
 
         self.play = Button(pygame.Rect(self.Size[0]/3, 2*self.Size[1]/18, self.Size[0]/3, self.Size[1]/6),color["GREEN"],"Play",self.font,"play")
