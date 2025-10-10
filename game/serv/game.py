@@ -1,6 +1,7 @@
 import pygame, threading
 from state import State
 from client import Client
+from server import start_server
 #from C_inGame import InGame
 #from C_card import Card
 
@@ -20,6 +21,7 @@ class Game:
 
         #self.Game = InGame(self.screen,self.screenSize,self.font,self.cards)
         self.Game = None
+        self.objClicked = None
 
         self.state = State(self.screen,self.screenSize,self.font,self.Game)
         self.mod = "menu" #menu/reglage/game
@@ -33,15 +35,35 @@ class Game:
                 if event.type == pygame.QUIT:
                     running = False
 
+                if event.type == pygame.KEYDOWN:
+
+                    if self.objClicked != None:
+
+                        txt = self.objClicked.dicRect[self.objClicked.id+"_input"]["text"]
+
+                        if event.key == pygame.K_ESCAPE:
+                            self.objClicked.dicRect[self.objClicked.id+"_input"]["text"] = txt.replace("|","")
+                            self.objClicked = None
+
+                        elif event.key == pygame.K_BACKSPACE:
+                            self.objClicked.dicRect[self.objClicked.id+"_input"]["text"] = txt[:-2] + "|"
+
+                        else :
+                            if len(txt) < 30: #max char
+                                self.objClicked.dicRect[self.objClicked.id+"_input"]["text"] = txt[:-1] + str(event.unicode) + txt[-1]
+
                 if event.type == pygame.MOUSEBUTTONDOWN:
 
                     if self.mod == "menu":
-                        if self.state.settings.rect.collidepoint(event.pos):
+                        if self.state.host.rect.collidepoint(event.pos):
                             #("Play button clicked")
                             #self.Game.createHand()#initialise the hand of the player
+
+                            self.state.show_ip.update_text("show_ip",f"ip:port = {self.client.ip}:{5000}")
                             
-                            self.mod = "settings"
-                            print("settings !")
+                            threading.Thread(target=start_server, args = ("localhost", 5000)).start()
+                            self.mod = "host"
+                            print("Create serv !")
 
                         elif self.state.connexion.rect.collidepoint(event.pos):
                             print("connexion button clicked")
@@ -53,10 +75,29 @@ class Game:
 
                     elif self.mod == "connexion":
 
-                        if self.state.menu.rect.collidepoint(event.pos):
+                        if self.state.ip.rect.collidepoint(event.pos):
+
+                            if self.objClicked == None:
+                                self.state.ip.dicRect[self.state.ip.id+"_input"]["text"] += "|"
+                                self.objClicked = self.state.ip
+
+                        elif self.state.menu.rect.collidepoint(event.pos):
+                            self.objClicked = None
                             self.mod = "menu"
+
+                        elif self.state.play.rect.collidepoint(event.pos):
+                            self.mod = "game"
+                            ip_port = self.state.ip.dicRect[self.state.ip.id+"_input"]["text"][:-1]
+                            print(ip_port)
+                            threading.Thread(target=self.client.connexion_serveur, args=(ip_port,)).start()
+                            self.objClicked = None
+
+                        else :  #deselection
+                            if self.objClicked != None:
+                                self.state.ip.dicRect[self.objClicked.id+"_input"]["text"] = self.state.ip.dicRect[self.objClicked.id+"_input"]["text"].replace("|","")
+                                self.objClicked = None
                     
-                    elif self.mod == "settings":
+                    elif self.mod == "host":
 
                         if self.state.menu.rect.collidepoint(event.pos):
                             self.mod = "menu"
@@ -64,8 +105,6 @@ class Game:
                         #if self.state.play.rect.collidepoint(event.pos):
                             #self.mod = "game"
                             #threading.Thread(target=self.client.connexion_serveur, args=("localhost", 5000)).start()                           
-
-
     
             #Affiche ce qu'il doit être affiché en fonction du mode (reglage/menu/game)
             self.state.a_state(self.mod)

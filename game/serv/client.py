@@ -3,10 +3,21 @@ import socket, json, threading
 class Client:
 
     def __init__(self, ip="localhost", port=5000):
+        self.ip = socket.gethostbyname(ip)
+        self.port = port
         self.client = None
 
-    def connexion_serveur(self,ip, port):
+    def return_ip(self,ip_port):
+        ip, port = ip_port.split(":")
+        return ip, int(port)
+
+
+    def connexion_serveur(self,ip_port = "localhost:5000"):
         # Création de la socket
+
+        print(f"Connexion au serveur {ip_port}...")
+
+        ip,port = self.return_ip(ip_port)
 
         dic = {}
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
