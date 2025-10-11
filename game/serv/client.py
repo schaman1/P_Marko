@@ -7,7 +7,7 @@ class Client:
         self.port = port
         self.client = None
         self.connected = None
-        self.err_messsage = ""
+        self.err_message = ""
 
     def return_ip(self,ip_port):
         try :
@@ -27,7 +27,7 @@ class Client:
 
         if ip is None or port is None:
             self.connected = False
-            self.err_messsage = "Utilisez le format ip:port."
+            self.err_message = "Utilisez le format ip:port."
             return
 
         dic = {}
@@ -57,7 +57,7 @@ class Client:
         except :
 
             print("IP ou port incorrect.")
-            self.err_messsage = "IP ou port incorrect."
+            self.err_message = "IP ou port incorrect."
             self.connected = False
 
     def reception_server(self):

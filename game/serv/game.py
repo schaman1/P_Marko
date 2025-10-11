@@ -2,7 +2,6 @@ import pygame, threading
 from state import State
 from client import Client
 from server import Server
-from alert import Alert
 #from C_inGame import InGame
 #from C_card import Card
 
@@ -29,7 +28,6 @@ class Game:
         self.mod = "menu" #menu/reglage/game
         self.client = Client()
 
-        self.alert = [] #L'ensemble des alertes qui doivent être affiché
 
     def run(self):
         running = True
@@ -96,6 +94,7 @@ class Game:
 
                         elif self.state.menu.rect.collidepoint(event.pos):
                             self.objClicked = None
+                            self.state.ip.dicRect[self.state.ip.id+"_input"]["text"] = self.state.ip.dicRect[self.state.ip.id+"_input"]["text"].replace("|","")
                             self.mod = "menu"
 
                         elif self.state.start.rect.collidepoint(event.pos):
@@ -113,7 +112,7 @@ class Game:
                             if self.Server is not None:
                                 self.Server.stop_server()
                                 self.Server = None
-                                self.alert.insert(0,Alert(self.screen,"Le serveur a été stoppé",5))
+                                self.state.alert.insert(0,Alert(self.screen,"Le serveur a été stoppé",5))
 
                             self.mod = "menu"
 
@@ -124,21 +123,9 @@ class Game:
             #Affiche ce qu'il doit être affiché en fonction du mode (reglage/menu/game)
             self.state.a_state(self.mod)
 
-            self.draw_alert()
-
             # Update the display
             pygame.display.flip()
 
             self.dt = self.fpsClock.tick(self.fps) / 1000
 
         pygame.quit()
-
-    def draw_alert(self):
-
-        for idx,warning in enumerate(self.alert) : 
-            if warning.start_time < pygame.time.get_ticks() :
-                self.alert.remove(warning)
-                pass
-            else :
-                warning.update_pos(idx)
-                warning.draw()

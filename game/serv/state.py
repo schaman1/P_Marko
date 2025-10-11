@@ -1,6 +1,8 @@
 import pygame, threading
 from texture import color
 from C_button import Button
+from alert import Alert
+
 
 class State:
 
@@ -21,6 +23,7 @@ class State:
         self.show_ip = Button(pygame.Rect(self.Size[0]/3, 7*self.Size[1]/18, self.Size[0]/3, self.Size[1]/6),color["GREY"],"ip:port = ",self.font,"show_ip")
 
         self.menu = Button(pygame.Rect(self.Size[0]*2.5/6, 15.5*self.Size[1]/18, self.Size[0]/6, self.Size[1]/12),color["RED"],"Menu",self.font,"menu")
+        self.alert = [] #L'ensemble des alertes qui doivent être affiché
 
         #dic boutton menu : 1= rect, 2=couleur, 3=texte
         self.dicMenu = {"connexion": self.connexion,
@@ -74,6 +77,9 @@ class State:
         else : 
             pass
 
+        self.draw_alert()
+
+
     def connexion_serv(self,client):
         """renvoie le mode de jeu apres connexion"""
         ip_port = self.ip.dicRect[self.ip.id+"_input"]["text"][:-1]
@@ -89,12 +95,22 @@ class State:
             elapsed_time = (pygame.time.get_ticks() - start_time) / 1000
 
             if client.connected == False:
-                self.start.update_text("start",client.err_messsage)
+                self.alert.insert(0,Alert(self.screen,client.err_message,5))
                 return "connexion"
             
             elif client.connected : 
                 print("En attente du serveur...")
                 return "wait_serv"
 
-        self.start.update_text("start","Echec de la connexion")
+        self.alert.insert(0,Alert(self.screen,client.err_message,5))
         return "connexion"
+    
+    def draw_alert(self):
+
+        for idx,warning in enumerate(self.alert) : 
+            if warning.start_time < pygame.time.get_ticks() :
+                self.alert.remove(warning)
+                pass
+            else :
+                warning.update_pos(idx)
+                warning.draw()
