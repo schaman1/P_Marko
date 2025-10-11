@@ -112,7 +112,6 @@ class Game:
                             if self.Server is not None:
                                 self.Server.stop_server()
                                 self.Server = None
-                                self.state.alert.insert(0,Alert(self.screen,"Le serveur a été stoppé",5))
 
                             self.mod = "menu"
 

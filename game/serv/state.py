@@ -85,6 +85,7 @@ class State:
         ip_port = self.ip.dicRect[self.ip.id+"_input"]["text"][:-1]
 
         self.start.update_text("start","Connexion...")
+        client.connected = None
         threading.Thread(target=client.connexion_serveur, args=(ip_port,)).start()
 
         start_time = pygame.time.get_ticks()
@@ -107,7 +108,7 @@ class State:
     
     def draw_alert(self):
 
-        for idx,warning in enumerate(self.alert) : 
+        for idx, warning in enumerate(self.alert):
             if warning.start_time < pygame.time.get_ticks() :
                 self.alert.remove(warning)
                 pass

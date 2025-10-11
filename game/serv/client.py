@@ -12,7 +12,7 @@ class Client:
     def return_ip(self,ip_port):
         try :
             ip, port = ip_port.split(":")
-            return ip, int(port)
+            return ip, port
 
         except ValueError:
             return None, None
