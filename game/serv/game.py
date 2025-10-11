@@ -29,6 +29,8 @@ class Game:
         self.mod = "menu" #menu/reglage/game
         self.client = Client()
 
+        self.alert = [] #L'ensemble des alertes qui doivent être affiché
+
     def run(self):
         running = True
         while running:
@@ -69,7 +71,7 @@ class Game:
                             self.state.show_ip.update_text("show_ip",f"ip:port = {self.client.ip}:{5000}")
                             self.state.start.update_text("start","Lancement du serveur...")
                             
-                            self.Server = Server
+                            self.Server = Server()
                             threading.Thread(target=self.Server.start_server, args = ("localhost", 5000)).start()
                             threading.Thread(target=self.client.connexion_serveur, args=(f"{self.client.ip}:{5000}",)).start()
                             self.mod = "host"
@@ -108,11 +110,10 @@ class Game:
                     elif self.mod == "host":
 
                         if self.state.menu.rect.collidepoint(event.pos):
-                            if self.server is not None:
+                            if self.Server is not None:
                                 self.Server.stop_server()
-                                self.server = None
-
-                            threading.Thread(Alert, args = ("Le serveur a été stoper",5)).start()
+                                self.Server = None
+                                self.alert.insert(0,Alert(self.screen,"Le serveur a été stoppé",5))
 
                             self.mod = "menu"
 
@@ -123,9 +124,21 @@ class Game:
             #Affiche ce qu'il doit être affiché en fonction du mode (reglage/menu/game)
             self.state.a_state(self.mod)
 
+            self.draw_alert()
+
             # Update the display
             pygame.display.flip()
 
             self.dt = self.fpsClock.tick(self.fps) / 1000
 
         pygame.quit()
+
+    def draw_alert(self):
+
+        for idx,warning in enumerate(self.alert) : 
+            if warning.start_time < pygame.time.get_ticks() :
+                self.alert.remove(warning)
+                pass
+            else :
+                warning.update_pos(idx)
+                warning.draw()

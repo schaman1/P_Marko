@@ -61,11 +61,14 @@ class Client:
             self.connected = False
 
     def reception_server(self):
-        while True:
+        try : 
+            while True:
 
-            data = json.loads(self.client.recv(1024).decode())  #reception des datas
-            
-            if not data:
-                break
-            # Réception de la réponse
-            print(f"Réponse du serveur : {data["pseudo"]} ta force : {data["force"]}")
+                data = json.loads(self.client.recv(1024).decode())  #reception des datas
+                
+                if not data:
+                    break
+                # Réception de la réponse
+                print(f"Réponse du serveur : {data["pseudo"]} ta force : {data["force"]}")
+        except :
+            print("server Stoppé")
