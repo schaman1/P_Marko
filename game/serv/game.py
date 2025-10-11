@@ -44,8 +44,8 @@ class Game:
                         txt = self.objClicked.dicRect[self.objClicked.id+"_input"]["text"]
 
                         if event.key == pygame.K_RETURN:
-                            self.objClicked.dicRect[self.objClicked.id+"_input"]["text"] = txt.replace("|","")
                             self.mod = self.state.connexion_serv(self.client)
+                            self.objClicked.dicRect[self.objClicked.id+"_input"]["text"] = txt.replace("|","")
                             self.objClicked = None
 
                         elif event.key == pygame.K_ESCAPE:
@@ -70,8 +70,7 @@ class Game:
                             self.state.start.update_text("start","Lancement du serveur...")
                             
                             self.Server = Server()
-                            threading.Thread(target=self.Server.start_server, args = ("localhost", 5000)).start()
-                            threading.Thread(target=self.client.connexion_serveur, args=(f"{self.client.ip}:{5000}",)).start()
+                            threading.Thread(target=self.Server.start_server, args = (5000,self.client)).start()
                             self.mod = "host"
                             
                             print("Create serv et connection!")
@@ -112,6 +111,7 @@ class Game:
                             if self.Server is not None:
                                 self.Server.stop_server()
                                 self.Server = None
+                                self.state.add_alert("Serveur stoppé.",)
 
                             self.mod = "menu"
 

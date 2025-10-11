@@ -34,7 +34,7 @@ class State:
                             "start": self.start,
                             "menu": self.menu}
         
-        self.dicSettings = {"menu": self.menu,
+        self.dicCreation = {"menu": self.menu,
                             "start": self.start,
                             "ip": self.show_ip}
 
@@ -70,7 +70,7 @@ class State:
 
         elif state == "host":
 
-            for btn in self.dicSettings.values():
+            for btn in self.dicCreation.values():
 
                 btn.draw(self.screen)
 
@@ -109,9 +109,14 @@ class State:
     def draw_alert(self):
 
         for idx, warning in enumerate(self.alert):
+
             if warning.start_time < pygame.time.get_ticks() :
                 self.alert.remove(warning)
-                pass
-            else :
-                warning.update_pos(idx)
-                warning.draw()
+
+                continue #Passe a l'iteratio  d'après
+
+            warning.update_pos(idx)
+            warning.draw()
+
+    def add_alert(self,err_message,time=5):
+        self.alert.insert(0,Alert(self.screen,err_message,5))
