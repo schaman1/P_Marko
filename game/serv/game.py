@@ -1,7 +1,8 @@
 import pygame, threading
 from state import State
 from client import Client
-from server import start_server
+from server import Server
+from alert import Alert
 #from C_inGame import InGame
 #from C_card import Card
 
@@ -21,6 +22,7 @@ class Game:
 
         #self.Game = InGame(self.screen,self.screenSize,self.font,self.cards)
         self.Game = None
+        self.Server = None
         self.objClicked = None
 
         self.state = State(self.screen,self.screenSize,self.font,self.Game)
@@ -67,9 +69,9 @@ class Game:
                             self.state.show_ip.update_text("show_ip",f"ip:port = {self.client.ip}:{5000}")
                             self.state.start.update_text("start","Lancement du serveur...")
                             
-                            threading.Thread(target=start_server, args = ("localhost", 5000)).start()
+                            self.Server = Server
+                            threading.Thread(target=self.Server.start_server, args = ("localhost", 5000)).start()
                             threading.Thread(target=self.client.connexion_serveur, args=(f"{self.client.ip}:{5000}",)).start()
-                                                        
                             self.mod = "host"
                             
                             print("Create serv et connection!")
@@ -106,6 +108,12 @@ class Game:
                     elif self.mod == "host":
 
                         if self.state.menu.rect.collidepoint(event.pos):
+                            if self.server is not None:
+                                self.Server.stop_server()
+                                self.server = None
+
+                            threading.Thread(Alert, args = ("Le serveur a été stoper",5)).start()
+
                             self.mod = "menu"
 
                         #if self.state.play.rect.collidepoint(event.pos):

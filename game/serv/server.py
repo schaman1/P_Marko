@@ -1,63 +1,66 @@
 import socket, threading, os
 
-port = 5000
-lClient = {}
+class Server :
+    def __init__(self, host='localhost', port=5000):
+        self.lClient = {}
+        self.host = host
+        self.port = port
+        self.server = None
+        self.is_running = False
 
-def clear():
-    if os.name == "nt":
-        os.system("cls")
-    else:
-        os.system("clear")
+    def handle_client(self,client_socket, id):
+        while True:
+            try : 
+                data = client_socket.recv(1024).decode()
+            except : 
+                client_socket.close()
+                
+            if not data:
+                break
+            print(f"Reçu : {data}")
 
+            # Envoyer le message à tous les clients encore connectés
+            for client in self.lClient:
+                try:
+                    client.send(f"{data}".encode())
+                except OSError:
+                        # Si le socket n'est plus valide, on l'enlève de la liste
+                    if self.lClient[client]["Host"]==True:
+                        print("Le host a quitté, tous les clients vont être déconnectés.")  
+                        self.stop_server()   
 
-def handle_client(client_socket, id):
-    while True:
-        try : 
-            data = client_socket.recv(1024).decode()
-        except : 
-            client_socket.close()
-            
-        if not data:
-            break
-        print(f"Reçu : {data}")
+        client_socket.close()
 
-        # Envoyer le message à tous les clients encore connectés
-        for client in lClient:
-            try:
-                client.send(f"{data}".encode())
-            except OSError:
-                    # Si le socket n'est plus valide, on l'enlève de la liste
-                if lClient[client]["Host"]==True:
-                    print("Le host a quitté, tous les clients vont être déconnectés.")
-                    for c in lClient:
-                        c.close()
-                    lClient.clear()
-                    break
-                del lClient[client]
+    def stop_server(self):
+        """Arrête le serveur et déconnecte tous les clients."""
+        for client in self.lClient:
+            client.close()
+        self.lClient.clear()
 
-    client_socket.close()
+        self.is_running = False
+        if self.server:
+            self.server.close()
+            self.server = None
+        print("Serveur arrêté.")
 
-def start_server(host,port):
-    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.bind((host, port)) #Lance le serveur
-    server.listen()
-    print(f"Serveur en écoute sur le port {port}...")
+    def start_server(self,host,port):
+        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server.bind((host, port)) #Lance le serveur 
+        self.server.listen()
+        print(f"Serveur en écoute sur le port {port}...")
 
-    while True:
+        while self.is_running:
 
-        client_socket, addr = server.accept()
-        if lClient == []:
-            lClient[client_socket] = {"Host":True}
-        else : 
-            lClient[client_socket] = {"Host":False}
+            client_socket, addr = self.server.accept()
+            if self.lClient == []:
+                self.lClient[client_socket] = {"Host":True}
+            else : 
+                self.lClient[client_socket] = {"Host":False}
 
-        print(f"Connexion de {addr}")
+            print(f"Connexion de {addr}")
 
-        client_handler = threading.Thread(target=handle_client, args=(client_socket,id))
-        client_handler.start()
-
-    server.close()
-
+            client_handler = threading.Thread(target=self.handle_client, args=(client_socket,id))
+            client_handler.start()
 
 # print("Quel mode de serveur voulez vous lancer ?\n1. Serveur Local\n2. Serveur sur le réseau local\n3. Serveur sur internet (ngrok)")
 # rep=input("-> ")

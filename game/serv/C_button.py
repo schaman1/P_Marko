@@ -28,7 +28,7 @@ class Button:
 
             pygame.draw.rect(screen,ele["color"],ele["rect"],border_radius = ele["border"])
             # Centrer le texte dans le rectangle
-            text = self.font.render(ele["text"], True, ele["text_color"])  # True = anti-aliasing
+            text = self.font.render(ele["text"],True, ele["text_color"])  # True = anti-aliasing
             text_rect = text.get_rect(**{self.alignement: getattr(ele["rect"], self.alignement)})
             screen.blit(text, text_rect)
 
