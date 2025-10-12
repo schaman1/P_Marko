@@ -2,13 +2,15 @@ import pygame,math
 
 class Load :
 
-    def __init__(self,screen,nbr,radius = 10, distance = 50):
+    def __init__(self,screen,nbr = 8,radius = 10, distance = 50, speed = 1):
         self.nbr = nbr
         self.angle = 0
         self.screen = screen
         self.mid = (self.screen.get_rect().center)
         self.radius = radius
         self.distance = distance
+        self.speed = speed
+        self.rotate_angle = 2*math.pi/720
 
     def draw(self):
         for i in range(self.nbr):
@@ -16,7 +18,9 @@ class Load :
 
     def calcul_pos(self,idx):
 
-        angle = self.angle + 360/self.nbr*idx
+        angle = self.angle + 2*math.pi/(self.nbr)*idx
+
+        self.angle +=self.rotate_angle * self.speed
 
         x = math.cos(angle) * self.distance
         y = math.sin(angle) * self.distance

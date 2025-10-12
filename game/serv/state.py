@@ -12,7 +12,7 @@ class State:
         self.Size = screenSize
         self.font = font
         self.Game = Game
-        self.load = Load(screen,10)
+        self.load = Load(screen)
 
         self.join = Button(pygame.Rect(self.Size[0]/3, 2*self.Size[1]/18, self.Size[0]/3, self.Size[1]/6),color["GREEN"],"Rejoindre une partie",self.font,"join")
         self.host = Button(pygame.Rect(self.Size[0]/3, 7*self.Size[1]/18, self.Size[0]/3, self.Size[1]/6),color["GREY"],"Creer une partie",self.font,"host")
@@ -41,7 +41,7 @@ class State:
                             "start": self.start,
                             "ip": self.show_ip}
         
-        self.no_black_screen = "loading"
+        self.no_black_screen = ""#"loading"
 
     def a_state(self,state):
 
@@ -102,7 +102,6 @@ class State:
         while client.connected == None and elapsed_time < 15:  # Attendre la connexion ou un timeout de 5 secondes
 
             elapsed_time = (pygame.time.get_ticks() - start_time) / 1000
-            print(elapsed_time)
             
             if client.connected : 
                 print("En attente du serveur...")
