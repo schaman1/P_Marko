@@ -44,9 +44,10 @@ class Game:
                         txt = self.objClicked.dicRect[self.objClicked.id+"_input"]["text"]
 
                         if event.key == pygame.K_RETURN:
-                            self.mod = self.state.connexion_serv(self.client)
+                            self.mod = "loading"
+                            print("Loading")
                             self.objClicked.dicRect[self.objClicked.id+"_input"]["text"] = txt.replace("|","")
-                            self.objClicked = None
+                            threading.Thread(target = self.connect_serv).start()
 
                         elif event.key == pygame.K_ESCAPE:
                             self.objClicked.dicRect[self.objClicked.id+"_input"]["text"] = txt.replace("|","")
@@ -73,10 +74,11 @@ class Game:
                             threading.Thread(target=self.Server.start_server, args = (5000,self.client)).start()
                             self.mod = "host"
                             
+                            self.state.start.update_text("start","Serveur créé")
                             print("Create serv et connection!")
 
-                        elif self.state.connexion.rect.collidepoint(event.pos):
-                            print("connexion button clicked")
+                        elif self.state.join.rect.collidepoint(event.pos):
+                            print("join button clicked")
                             self.mod = "connexion"
 
                         elif self.state.quit.rect.collidepoint(event.pos):
@@ -96,9 +98,10 @@ class Game:
                             self.state.ip.dicRect[self.state.ip.id+"_input"]["text"] = self.state.ip.dicRect[self.state.ip.id+"_input"]["text"].replace("|","")
                             self.mod = "menu"
 
-                        elif self.state.start.rect.collidepoint(event.pos):
-                            self.mod = self.state.connexion_serv(self.client)  #Connexion serv
-                            self.objClicked = None
+                        elif self.state.connexion.rect.collidepoint(event.pos):
+                            self.mod = "loading"
+                            print("loading")
+                            threading.Thread(target = self.connect_serv).start()
 
                         else :  #deselection
                             if self.objClicked != None:
@@ -119,6 +122,7 @@ class Game:
                             #self.mod = "game"
                             #threading.Thread(target=self.client.connexion_serveur, args=("localhost", 5000)).start()                           
     
+            #print(self.mod)
             #Affiche ce qu'il doit être affiché en fonction du mode (reglage/menu/game)
             self.state.a_state(self.mod)
 
@@ -128,3 +132,7 @@ class Game:
             self.dt = self.fpsClock.tick(self.fps) / 1000
 
         pygame.quit()
+
+    def connect_serv(self):
+        self.mod = self.state.connexion_serv(self.client)  #Connexion serv
+        self.objClicked = None

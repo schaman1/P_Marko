@@ -18,6 +18,7 @@ class Client:
 
         except ValueError:
             return None, None
+        
     def connexion_serveur(self, ip_port="localhost:5000"):
         ip, port = self.return_ip(ip_port)
         if ip is None or port is None:
@@ -29,7 +30,8 @@ class Client:
 
         essais = 0
         max_essais = 3
-        while essais < max_essais and not self.connected:
+        while essais < max_essais and self.connected is not True:
+            print(self.connected)
             try:
                 print(f"Trying to connect with : {ip}, {port}")
                 self.client.connect((ip, port))
@@ -42,10 +44,10 @@ class Client:
                 print(f"Échec {essais}/{max_essais} — nouvelle tentative dans 0.5s…")
                 time.sleep(0.5)
 
-        if not self.connected:
+        if self.connected is not True:
             print("IP ou port incorrect.")
             self.err_message = "IP ou port incorrect."
-
+            self.connected = False
 
     def loop_client(self):
 
