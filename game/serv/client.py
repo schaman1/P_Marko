@@ -21,9 +21,10 @@ class Client:
         
     def connexion_serveur(self, ip_port="localhost:5000"):
         ip, port = self.return_ip(ip_port)
+
         if ip is None or port is None:
-            self.connected = False
-            self.err_message = "Utilisez le format ip:port."
+
+            self.return_err("Utilisez le format ip:port")
             return
 
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -34,20 +35,34 @@ class Client:
             print(self.connected)
             try:
                 print(f"Trying to connect with : {ip}, {port}")
-                self.client.connect((ip, port))
-                self.connected = True
-                print("Connecté au serveur")
-                threading.Thread(target=self.reception_server, daemon=True).start()
-                self.loop_client()
+                self.client.connect((ip, port)) #Si connexion marche pas alors renvoie erreur = except
+
+                self.connection_succes()
+
             except:
                 essais += 1
                 print(f"Échec {essais}/{max_essais} — nouvelle tentative dans 0.5s…")
                 time.sleep(0.5)
 
         if self.connected is not True:
-            print("IP ou port incorrect.")
-            self.err_message = "IP ou port incorrect."
-            self.connected = False
+            self.return_err("Ip ou port incorrect")
+
+    def return_err(self,mess):
+        print(mess)
+        self.err_message = mess
+        self.connected = False
+
+    def connection_succes(self):
+        self.connected = True
+        
+        self.client.send(json.dumps({"id":"new client connection",
+                                    "client":self.client}).encode())
+        
+        print("Connecté au serveur")
+
+        #Start loop for a data for data and client
+        threading.Thread(target=self.loop_reception_server, daemon=True).start()
+        self.loop_client()
 
     def loop_client(self):
 
@@ -64,7 +79,7 @@ class Client:
         print("Deco")
         self.client.close()
 
-    def reception_server(self):
+    def loop_reception_server(self):
         try : 
             while True:
 
