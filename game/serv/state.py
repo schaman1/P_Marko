@@ -82,7 +82,7 @@ class State:
 
     def connexion_serv(self,client):
         """renvoie le mode de jeu apres connexion"""
-        ip_port = self.ip.dicRect[self.ip.id+"_input"]["text"][:-1]
+        ip_port = self.ip.dicRect[self.ip.id+"_input"]["text"].replace("|","")
 
         self.start.update_text("start","Connexion...")
         client.connected = None

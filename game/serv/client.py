@@ -9,6 +9,7 @@ class Client:
         self.client = None
         self.connected = None
         self.err_message = ""
+        self.dic = {}
 
     def return_ip(self,ip_port):
         try :
@@ -17,48 +18,49 @@ class Client:
 
         except ValueError:
             return None, None
-
-    def connexion_serveur(self,ip_port = "localhost:5000"):
-        # Création de la socket
-
-        ip,port = self.return_ip(ip_port)
-
+    def connexion_serveur(self, ip_port="localhost:5000"):
+        ip, port = self.return_ip(ip_port)
         if ip is None or port is None:
             self.connected = False
             self.err_message = "Utilisez le format ip:port."
             return
 
-        dic = {}
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        for i in range(3):
-            try : 
+        essais = 0
+        max_essais = 3
+        while essais < max_essais and not self.connected:
+            try:
                 print(f"Trying to connect with : {ip}, {port}")
                 self.client.connect((ip, port))
                 self.connected = True
-            
                 print("Connecté au serveur")
+                threading.Thread(target=self.reception_server, daemon=True).start()
+                self.loop_client()
+            except:
+                essais += 1
+                print(f"Échec {essais}/{max_essais} — nouvelle tentative dans 0.5s…")
+                time.sleep(0.5)
 
-                # Démarrer un thread pour recevoir les messages du serveur
-                threading.Thread(target=self.reception_server).start()
+        if not self.connected:
+            print("IP ou port incorrect.")
+            self.err_message = "IP ou port incorrect."
 
-                # Envoi d'un message
-                while True:
-                    dic["pseudo"] = input("Ton pseudo: ")
-                    dic["force"] = int(input("ta force"))
 
-                    self.client.send(json.dumps(dic).encode())
-                    print("Message envoyé")
+    def loop_client(self):
 
-                # Fermer la connexion
-                self.client.close()
+        # Envoi d'un message
+        while True:
+            pass
+            #self.dic["pseudo"] = input("Ton pseudo: ")
+            #self.dic["force"] = int(input("ta force"))
 
-            except :
-                time.sleep(0.5) #Attend o,5 sec que le serv soit pret ?
+            #self.client.send(json.dumps(self.dic).encode())
+            #print("Message envoyé")
 
-        print("IP ou port incorrect.")
-        self.err_message = "IP ou port incorrect."
-        self.connected = False
+        # Fermer la connexion
+        print("Deco")
+        self.client.close()
 
     def reception_server(self):
         try : 
