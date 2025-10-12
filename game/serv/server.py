@@ -7,45 +7,75 @@ class Server :
         self.port = port
         self.server = None
         self.is_running = False
+        self.nbr_player = 1
 
-    def handle_client(self,client_socket):
-        while True:
-            try : 
-                data = json.loads(client_socket.client.recv(1024).decode())
-            except : 
-                client_socket.close()
-                break
-                
-            print(f"Reçu : {data}")
-            self.in_menu()
-            
+    def handle_client(self, client_socket):
+        """Gère la réception des messages d'un client connecté."""
+        try:
+            while True:
+                try:
+                    data_recu = client_socket.recv(1024)
 
-        client_socket.close()
+                    # si la réception renvoie rien, le client a fermé proprement
+                    if not data_recu:
+                        print(f"⚠️ Client {client_socket.getpeername()} déconnecté.")
+                        break
 
-    def in_menu(self,data):
+                    data = json.loads(data_recu.decode())
+                    print(f"📩 Reçu de {client_socket.getpeername()} : {data}")
+                    self.in_menu(data, client_socket)
+
+                except json.JSONDecodeError:
+                    print("⚠️ Erreur JSON — données corrompues ou incomplètes.")
+                    continue  # on continue au lieu de crash
+
+                except ConnectionResetError:
+                    print(f"❌ Déconnexion brutale de {client_socket.getpeername()}")
+                    break
+
+                except Exception as e:
+                    print(f"⚠️ Erreur inattendue côté client : {e}")
+                    break
+
+        finally:
+            # Nettoyage à la fin
+            self.remove_client(client_socket)
+            client_socket.close()
+
+
+    def in_menu(self,data,sender):
 
         if data["id"] == "new client connection":
-            pass
 
-        # Envoyer le message à tous les clients encore connectés
-        for client in self.lClient:
-            try:
-                pass
-                #client.send(f"{data}".encode())
-            except OSError:
-                    # Si le socket n'est plus valide, on l'enlève de la liste
-                if self.lClient[client]["Host"]==True:
-                    print("Le host a quitté, tous les clients vont être déconnectés.")  
-                    self.stop_server() 
-
+            for client in self.lClient.keys() : 
+                if client == sender : #= L'expediteur
+                    text = f"Player {self.nbr_player} (you)"
+                    self.lClient[client]["pseudo"] = f"Player {self.nbr_player} (you)"
+                    self.nbr_player += 1
                 else : 
-                    self.lClient[client].close()
-                    #self.lClient.remove
+                    text = f"Player {self.nbr_player}"
+
+                self.send_data(json.dumps({"id":"new player","new connection":text}),client)
+
+    def send_data(self,data,client):
+
+        try :
+            client.send(f"{data}".encode())
+        except OSError:
+                # Si le socket n'est plus valide, on l'enlève de la liste
+            if self.lClient[client]["Host"]==True:
+                print("Le host a quitté, tous les clients vont être déconnectés.")  
+                self.stop_server() 
+
+            else : 
+                self.lClient[client].close()
+                #self.lClient.remove
         pass
+
 
     def stop_server(self):
         """Arrête le serveur et déconnecte tous les clients."""
-        for client in self.lClient:
+        for client in self.lClient.keys():
             client.close()
         self.lClient.clear()
 
@@ -91,8 +121,7 @@ class Server :
 
             print(f"Connexion de {addr}")
 
-            client_handler = threading.Thread(target=self.handle_client, args=(client_socket,))
-            client_handler.start()
+            threading.Thread(target=self.handle_client, args=(client_socket,)).start()
 
 
 # print("Quel mode de serveur voulez vous lancer ?\n1. Serveur Local\n2. Serveur sur le réseau local\n3. Serveur sur internet (ngrok)")

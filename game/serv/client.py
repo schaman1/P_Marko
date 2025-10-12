@@ -7,6 +7,7 @@ class Client:
         self.ip = socket.gethostbyname(socket.gethostname())
         self.port = port
         self.client = None
+        self.pseudo = None
         self.connected = None
         self.err_message = ""
         self.dic = {}
@@ -20,6 +21,7 @@ class Client:
             return None, None
         
     def connexion_serveur(self, ip_port="localhost:5000"):
+        print("connexion_serv")
         ip, port = self.return_ip(ip_port)
 
         if ip is None or port is None:
@@ -32,17 +34,17 @@ class Client:
         essais = 0
         max_essais = 3
         while essais < max_essais and self.connected is not True:
-            print(self.connected)
-            try:
+
+            #try:
                 print(f"Trying to connect with : {ip}, {port}")
                 self.client.connect((ip, port)) #Si connexion marche pas alors renvoie erreur = except
-
                 self.connection_succes()
 
-            except:
+            #except:
                 essais += 1
                 print(f"Échec {essais}/{max_essais} — nouvelle tentative dans 0.5s…")
                 time.sleep(0.5)
+                print(self.connected)
 
         if self.connected is not True:
             self.return_err("Ip ou port incorrect")
@@ -55,8 +57,7 @@ class Client:
     def connection_succes(self):
         self.connected = True
         
-        self.client.send(json.dumps({"id":"new client connection",
-                                    "client":self.client}).encode())
+        self.client.send(json.dumps({"id":"new client connection"}).encode())
         
         print("Connecté au serveur")
 
@@ -80,7 +81,7 @@ class Client:
         self.client.close()
 
     def loop_reception_server(self):
-        try : 
+        #try : 
             while True:
 
                 data = json.loads(self.client.recv(1024).decode())  #reception des datas
@@ -88,6 +89,8 @@ class Client:
                 if not data:
                     break
                 # Réception de la réponse
-                print(f"Réponse du serveur : {data["pseudo"]} ta force : {data["force"]}")
-        except :
-            print("server Stoppé")
+                if data["id"] == "new player" :
+                    print(f"New connection : {data["new connection"]}")
+                    self.pseudo = data["new connection"]
+        #except Exception as e:
+         #   print(f"server Stoppé a cause de : {e}")
