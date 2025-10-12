@@ -7,7 +7,7 @@ class Client:
         self.ip = socket.gethostbyname(socket.gethostname())
         self.port = port
         self.client = None
-        self.pseudo = None
+        self.pseudo = "Coming soon"
         self.connected = None
         self.err_message = ""
         self.dic = {}
@@ -91,6 +91,8 @@ class Client:
                 # Réception de la réponse
                 if data["id"] == "new player" :
                     print(f"New connection : {data["new connection"]}")
-                    self.pseudo = data["new connection"]
+
+                    if data["sender"]:
+                        self.pseudo = data["new connection"]
         #except Exception as e:
          #   print(f"server Stoppé a cause de : {e}")

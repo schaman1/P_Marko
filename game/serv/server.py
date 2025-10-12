@@ -49,13 +49,14 @@ class Server :
 
             for client in self.lClient.keys() : 
                 if client == sender : #= L'expediteur
-                    text = f"Player {self.nbr_player} (you)"
-                    self.lClient[client]["pseudo"] = f"Player {self.nbr_player} (you)"
+                    meornot = True
                     self.nbr_player += 1
                 else : 
-                    text = f"Player {self.nbr_player}"
+                    meornot = False
+                    
+                text = f"Player {self.nbr_player}"
 
-                self.send_data(json.dumps({"id":"new player","new connection":text}),client)
+                self.send_data(json.dumps({"id":"new player","new connection":text,"sender":meornot}),client)
 
     def send_data(self,data,client):
 
