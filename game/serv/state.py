@@ -78,6 +78,8 @@ class State:
 
                 btn.draw(self.screen)
 
+            self.client.display_clients_name()
+
         elif state == "loading":
             self.draw_load()
 
