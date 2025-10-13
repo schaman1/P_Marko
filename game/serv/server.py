@@ -7,7 +7,7 @@ class Server:
         self.port = port
         self.server = None
         self.is_running = False
-        self.nbr_player = 1
+        self.nbr_player = 0
 
     def handle_client(self, client_socket):
         """Gère la réception des messages d'un client connecté."""
@@ -73,8 +73,6 @@ class Server:
             print("New client connection")
             for client in list(self.lClient.keys()):
                 meornot = (client == sender)
-                if meornot:
-                    self.nbr_player += 1
                 text = f"Player {self.nbr_player}"
                 self.send_data(json.dumps({
                     "id": "new player",
@@ -83,6 +81,8 @@ class Server:
                 }), client)
 
     def send_data(self, data, client):
+        """Envoie des données à un client spécifique."""
+        data += "\n"
         try:
             client.send(data.encode())
         except OSError:
@@ -137,14 +137,15 @@ class Server:
     def set_param_on_client_connection(self, client_socket):
                 
         is_host = len(self.lClient) == 0
+        self.nbr_player += 1
         self.lClient[client_socket] = {"Host": is_host,
-                                       "id": f"Player {len(self.lClient)+1}"}
-        print("New client connected")
+                                       "id": f"Player {self.nbr_player}"}
 
         for socket,client in self.lClient.items():
-
-            self.send_data(json.dumps({
-                "id": "new player",
-                "new connection": client["id"],
-                "sender": False
-            }), socket)
+            
+            if socket != client_socket :
+                self.send_data(json.dumps({
+                    "id": "new player",
+                    "new connection": client["id"],
+                    "sender": False
+                }), client_socket)

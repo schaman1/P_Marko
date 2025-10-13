@@ -90,25 +90,35 @@ class Client:
 
     def loop_reception_server(self):
         try : 
+            buffer = ""
             while True:
 
-                data = json.loads(self.client.recv(1024).decode())  #reception des datas
-                print(f"Data recu : {data}")
-                
-                if not data:
-                    break
-                # Réception de la réponse
-                if data["id"] == "new player" :
-                    print(f"New connection : {data["new connection"]}")
-                    text = data["new connection"]
-                    
+                #Buffer car si plusieurs mess arrivent en même temps bah plb
+                buffer += self.client.recv(1024).decode()
 
-                    if data["sender"]:
-                        self.pseudo = text
-                        text = f"{text} (vous)"
-                    self.lClient_id.append(f"{data["new connection"]}")
+                if not buffer:
+                    break
+
+                while "\n" in buffer:
+                    line, buffer = buffer.split("\n", 1)
+                    data = json.loads(line)
+                    print(f"Data recu : {data}")
+                    self.traiter_data(data)
+
         except Exception as e:
             print(f"server Stoppé a cause de : {e}")
+
+    def traiter_data(self,data):
+                
+        # Réception de la réponse
+        if data["id"] == "new player" :
+            print(f"New connection : {data["new connection"]}")
+            text = data["new connection"]
+
+            if data["sender"]:
+                self.pseudo = text
+                text = f"{text} (vous)"
+            self.lClient_id.append(text)
 
     def display_clients_name(self):
         for idx,client in enumerate(self.lClient_id):
