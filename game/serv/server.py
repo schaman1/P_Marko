@@ -18,23 +18,23 @@ class Server :
 
                     # si la réception renvoie rien, le client a fermé proprement
                     if not data_recu:
-                        print(f"⚠️ Client {client_socket.getpeername()} déconnecté.")
+                        print(f"Client {client_socket.getpeername()} déconnecté.")
                         break
 
                     data = json.loads(data_recu.decode())
-                    print(f"📩 Reçu de {client_socket.getpeername()} : {data}")
+                    print(f"Reçu de {client_socket.getpeername()} : {data}")
                     self.in_menu(data, client_socket)
 
                 except json.JSONDecodeError:
-                    print("⚠️ Erreur JSON — données corrompues ou incomplètes.")
+                    print("Erreur JSON — données corrompues ou incomplètes.")
                     continue  # on continue au lieu de crash
 
                 except ConnectionResetError:
-                    print(f"❌ Déconnexion brutale de {client_socket.getpeername()}")
+                    print(f"Déconnexion brutale de {client_socket.getpeername()}")
                     break
 
                 except Exception as e:
-                    print(f"⚠️ Erreur inattendue côté client : {e}")
+                    print(f"Erreur inattendue côté client : {e}")
                     break
 
         finally:
