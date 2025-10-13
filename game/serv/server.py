@@ -39,7 +39,7 @@ class Server :
 
         finally:
             # Nettoyage à la fin
-            del self.lClient(client_socket)
+            del self.lClient[client_socket]
             client_socket.close()
 
 

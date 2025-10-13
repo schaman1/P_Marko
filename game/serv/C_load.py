@@ -14,7 +14,7 @@ class Load :
 
     def draw(self):
         for i in range(self.nbr):
-            pygame.draw.circle(self.screen,(50,50,50),self.calcul_pos(i),self.radius)
+            pygame.draw.circle(self.screen,(150,150,150),self.calcul_pos(i),self.radius)
 
     def calcul_pos(self,idx):
 
