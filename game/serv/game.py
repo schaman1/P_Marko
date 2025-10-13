@@ -24,9 +24,9 @@ class Game:
         self.Server = None
         self.objClicked = None
 
-        self.state = State(self.screen,self.screenSize,self.font,self.Game)
         self.mod = "menu" #menu/reglage/game
-        self.client = Client()
+        self.client = Client(self.font,self.screen)
+        self.state = State(self.screen,self.screenSize,self.font,self.Game,self.client)
 
 
     def run(self):

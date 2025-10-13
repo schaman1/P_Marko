@@ -7,11 +7,12 @@ from C_load import Load
 
 class State:
 
-    def __init__(self,screen,screenSize,font,Game):
+    def __init__(self,screen,screenSize,font,Game,client):
         self.screen = screen
         self.Size = screenSize
         self.font = font
         self.Game = Game
+        self.client = client
         self.load = Load(screen)
 
         self.join = Button(pygame.Rect(self.Size[0]/3, 2*self.Size[1]/18, self.Size[0]/3, self.Size[1]/6),color["GREEN"],"Rejoindre une partie",self.font,"join")
@@ -56,7 +57,6 @@ class State:
 
         elif state == "game":
 
-            None
             #inGame_PostFase to do (choose skin, map, etc)
             self.screen.fill(color["BLACK"])
             #.drawAll()
@@ -64,9 +64,7 @@ class State:
         elif state == "wait_serv":
 
             self.screen.fill(color["BLACK"])
-            waiting_text = self.font.render("En attente du créateur pour lancer la partie...", True, color["WHITE"])
-            text_rect = waiting_text.get_rect(center=(self.Size[0]//2, self.Size[1]//2))
-            self.screen.blit(waiting_text, text_rect)
+            self.draw_waiting()
 
         elif state == "connexion":
 
@@ -115,6 +113,14 @@ class State:
     def draw_load(self):
         self.load.draw()
 
+    def draw_waiting(self):
+        """Draw cette ecran en attendant que le host lance la partie"""
+        waiting_text = self.font.render("En attente d'autres joueurs...", True, color["WHITE"])
+        text_rect = waiting_text.get_rect(center=(self.Size[0]//2, self.Size[1]//2))
+        self.screen.blit(waiting_text, text_rect)
+
+        self.client.display_clients_name()
+
     def draw_alert(self):
 
         for idx, warning in enumerate(self.alert):
@@ -128,4 +134,4 @@ class State:
             warning.draw()
 
     def add_alert(self,err_message,time=5):
-        self.alert.insert(0,Alert(self.screen,err_message,5))
+        self.alert.insert(0,Alert(self.screen,err_message,time))

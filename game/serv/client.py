@@ -3,14 +3,20 @@ import time
 
 class Client:
 
-    def __init__(self, ip="localhost", port=5000):
+    def __init__(self, font,screen,ip="localhost", port=5000):
         self.ip = socket.gethostbyname(socket.gethostname())
         self.port = port
         self.client = None
-        self.pseudo = "Coming soon"
         self.connected = None
+
+        self.pseudo = "Coming soon"
         self.err_message = ""
+
+        self.lClient_id = []
         self.dic = {}
+
+        self.font = font
+        self.screen = screen
 
     def return_ip(self,ip_port):
         try :
@@ -55,21 +61,23 @@ class Client:
         self.connected = False
 
     def connection_succes(self):
+        print("Connecté au serveur")
+        threading.Thread(target=self.loop_reception_server, daemon=True).start()
+        
         self.connected = True
         
         self.client.send(json.dumps({"id":"new client connection"}).encode())
         
-        print("Connecté au serveur")
 
         #Start loop for a data for data and client
-        threading.Thread(target=self.loop_reception_server, daemon=True).start()
-        self.loop_client()
 
-    def loop_client(self):
+        #self.loop_client() #Test
+
+    #def loop_client(self):
 
         # Envoi d'un message
-        while True:
-            pass
+        #while True:
+            #pass
             #self.dic["pseudo"] = input("Ton pseudo: ")
             #self.dic["force"] = int(input("ta force"))
 
@@ -77,22 +85,35 @@ class Client:
             #print("Message envoyé")
 
         # Fermer la connexion
-        print("Deco")
-        self.client.close()
+        #print("Deco")
+        #self.client.close()
 
     def loop_reception_server(self):
-        #try : 
+        try : 
             while True:
 
                 data = json.loads(self.client.recv(1024).decode())  #reception des datas
+                print(f"Data recu : {data}")
                 
                 if not data:
                     break
                 # Réception de la réponse
                 if data["id"] == "new player" :
                     print(f"New connection : {data["new connection"]}")
+                    text = data["new connection"]
+                    
 
                     if data["sender"]:
-                        self.pseudo = data["new connection"]
-        #except Exception as e:
-         #   print(f"server Stoppé a cause de : {e}")
+                        self.pseudo = text
+                        text = f"{text} (vous)"
+                    self.lClient_id.append(f"{data["new connection"]}")
+        except Exception as e:
+            print(f"server Stoppé a cause de : {e}")
+
+    def display_clients_name(self):
+        for idx,client in enumerate(self.lClient_id):
+            self.draw_text(self.screen,self.font,client,idx)
+
+    def draw_text(self,screen,font,text,idx):
+            text = font.render(text, True, (255, 255, 255))
+            screen.blit(text, (50, 50 + idx * 30))
