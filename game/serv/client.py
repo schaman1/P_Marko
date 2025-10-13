@@ -35,15 +35,15 @@ class Client:
         max_essais = 3
         while essais < max_essais and self.connected is not True:
 
-            #try:
+            try:
                 print(f"Trying to connect with : {ip}, {port}")
                 self.client.connect((ip, port)) #Si connexion marche pas alors renvoie erreur = except
                 self.connection_succes()
 
-            #except:
+            except:
                 essais += 1
                 print(f"Échec {essais}/{max_essais} — nouvelle tentative dans 0.5s…")
-                time.sleep(0.5)
+                time.sleep(0.2)
                 print(self.connected)
 
         if self.connected is not True:
