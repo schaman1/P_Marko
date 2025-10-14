@@ -1,5 +1,5 @@
 import pygame
-from game import Game
+from client.game import Game
 #from D_CreateCards import load_cards
 
 pygame.init()

@@ -1,7 +1,7 @@
 import pygame, threading
 from state import State
 from client import Client
-from server import Server
+from game.serv.server import Server
 from events import event_queue
 
 #from C_inGame import InGame
