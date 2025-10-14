@@ -1,5 +1,6 @@
 import socket, json, threading
 import time
+from events import event_queue
 
 class Client:
 
@@ -27,33 +28,24 @@ class Client:
             return None, None
         
     def connexion_serveur(self, ip_port="localhost:5000"):
-        print("connexion_serv")
         ip, port = self.return_ip(ip_port)
-
         if ip is None or port is None:
-
-            self.return_err("Utilisez le format ip:port")
-            return
+            return self.return_err("Utilisez le format ip:port")
 
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        essais = 0
-        max_essais = 3
-        while essais < max_essais and self.connected is not True:
-
+        for essais in range(3):
             try:
-                print(f"Trying to connect with : {ip}, {port}")
-                self.client.connect((ip, port)) #Si connexion marche pas alors renvoie erreur = except
+                print(f"Tentative de connexion {essais+1}/3...")
+                self.client.connect((ip, port))
                 self.connection_succes()
-
-            except:
-                essais += 1
-                print(f"Échec {essais}/{max_essais} — nouvelle tentative dans 0.5s…")
+                return
+            except Exception as e:
+                print(f"Échec connexion ({e}) — nouvelle tentative…")
                 time.sleep(0.2)
-                print(self.connected)
 
-        if self.connected is not True:
-            self.return_err("Ip ou port incorrect")
+        self.return_err("Ip ou port incorrect")
+
 
     def return_err(self,mess):
         print(mess)
@@ -62,9 +54,8 @@ class Client:
 
     def connection_succes(self):
         print("Connecté au serveur")
-        threading.Thread(target=self.loop_reception_server, daemon=True).start()
-        
         self.connected = True
+        threading.Thread(target=self.loop_reception_server, daemon=True).start()
         
         self.client.send(json.dumps({"id":"new client connection"}).encode())
         
@@ -89,24 +80,56 @@ class Client:
         #self.client.close()
 
     def loop_reception_server(self):
-        try : 
-            buffer = ""
-            while True:
+        self.client.settimeout(0.5)  # timeout pour ne pas bloquer recv
+        buffer = ""
 
-                #Buffer car si plusieurs mess arrivent en même temps bah plb
-                buffer += self.client.recv(1024).decode()
+        try:
+            while self.connected:
+                try:
+                    # Lecture non bloquante (avec timeout)
+                    data = self.client.recv(1024)
 
-                if not buffer:
+                    if not data:
+                        # si serveur coupé ou client déconnecté
+                        print("Connexion perdue (serveur fermé ?)")
+                        break
+
+                    buffer += data.decode()
+
+                    # 🪄 traiter tous les messages reçus séparés par "\n"
+                    while "\n" in buffer:
+                        line, buffer = buffer.split("\n", 1)
+                        data_json = json.loads(line)
+                        print(f"Data reçue : {data_json}")
+                        self.traiter_data(data_json)
+
+                except socket.timeout:
+                    # Pas de data → c’est normal
+                    continue
+
+                except Exception as e:
+                    print(f"Erreur réception: {e}")
                     break
 
-                while "\n" in buffer:
-                    line, buffer = buffer.split("\n", 1)
-                    data = json.loads(line)
-                    print(f"Data recu : {data}")
-                    self.traiter_data(data)
+            # Sortie de boucle
+            if self.connected:
+                print("Serveur fermé ou erreur réseau")
+            else:
+                print("Déconnexion volontaire")
 
-        except Exception as e:
-            print(f"server Stoppé a cause de : {e}")
+            # Notifier le serveur de notre départ
+            try:
+                self.client.send(json.dumps({"id": "remove client"}).encode())
+            except Exception:
+                print(Exception)
+
+            self.client.close()
+
+        finally:
+            self.connected = False
+            self.lClient_id.clear()
+            event_queue.put({"type": "SERVER_DISCONNECTED"})
+
 
     def traiter_data(self,data):
                 
@@ -119,6 +142,10 @@ class Client:
                 self.pseudo = text
                 text = f"{text} (vous)"
             self.lClient_id.append(text)
+
+        elif data["id"] == "remove player":
+            print(f"Remove connection : {data['remove connection']}")
+            self.lClient_id.remove(data["remove connection"])
 
     def display_clients_name(self):
         for idx,client in enumerate(self.lClient_id):

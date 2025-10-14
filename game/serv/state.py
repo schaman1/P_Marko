@@ -7,11 +7,10 @@ from C_load import Load
 
 class State:
 
-    def __init__(self,screen,screenSize,font,Game,client):
+    def __init__(self,screen,screenSize,font,client):
         self.screen = screen
         self.Size = screenSize
         self.font = font
-        self.Game = Game
         self.client = client
         self.load = Load(screen)
 
@@ -42,6 +41,8 @@ class State:
                             "start": self.start,
                             "ip": self.show_ip}
         
+        self.dicWaiting = {"menu": self.menu}
+        
         self.no_black_screen = ""#"loading"
 
     def a_state(self,state):
@@ -64,6 +65,10 @@ class State:
         elif state == "wait_serv":
 
             self.screen.fill(color["BLACK"])
+
+            for btn in self.dicWaiting.values():
+                btn.draw(self.screen)
+
             self.draw_waiting()
 
         elif state == "connexion":

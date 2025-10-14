@@ -80,6 +80,18 @@ class Server:
                     "sender": meornot
                 }), client)
 
+        elif data["id"] == "remove client":
+            print("Remove client")
+            removed_id = self.lClient[sender]["id"]
+            self.remove_client(sender)
+
+            for client in list(self.lClient.keys()):
+                print("Send data")
+                self.send_data(json.dumps({
+                    "id": "remove player",
+                    "remove connection": removed_id
+                }), client)
+
     def send_data(self, data, client):
         """Envoie des données à un client spécifique."""
         data += "\n"
@@ -101,11 +113,13 @@ class Server:
             except:
                 pass
         self.lClient.clear()
+        self.nbr_player = 0
 
         self.is_running = False
         if self.server:
             self.server.close()
             self.server = None
+        print(self.lClient)
         print("Serveur arrêté.")
 
     def start_server(self, port, client):

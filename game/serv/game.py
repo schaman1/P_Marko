@@ -2,6 +2,8 @@ import pygame, threading
 from state import State
 from client import Client
 from server import Server
+from events import event_queue
+
 #from C_inGame import InGame
 #from C_card import Card
 
@@ -20,13 +22,12 @@ class Game:
         self.dt = 0 # Delta time between frames = devra faire *dt pour les mouvements
 
         #self.Game = InGame(self.screen,self.screenSize,self.font,self.cards)
-        self.Game = None
         self.Server = None
         self.objClicked = None
 
         self.mod = "menu" #menu/reglage/game
         self.client = Client(self.font,self.screen)
-        self.state = State(self.screen,self.screenSize,self.font,self.Game,self.client)
+        self.state = State(self.screen,self.screenSize,self.font,self.client)
 
 
     def run(self):
@@ -107,6 +108,15 @@ class Game:
                             if self.objClicked != None:
                                 self.state.ip.dicRect[self.objClicked.id+"_input"]["text"] = self.state.ip.dicRect[self.objClicked.id+"_input"]["text"].replace("|","")
                                 self.objClicked = None
+
+                    elif self.mod == "wait_serv":
+
+                        if self.state.menu.rect.collidepoint(event.pos):
+                            if self.client.connected is True :
+                                self.client.connected = False
+                                print("Connected = false")
+
+                            self.mod = "menu"
                     
                     elif self.mod == "host":
 
@@ -114,15 +124,18 @@ class Game:
                             if self.Server is not None:
                                 self.Server.stop_server()
                                 self.Server = None
-                                self.state.add_alert("Serveur stoppé.",)
+                                self.state.add_alert("Serveur stoppé",)
 
                             self.mod = "menu"
+                            self.client.connected = False
 
                         #if self.state.play.rect.collidepoint(event.pos):
                             #self.mod = "game"
                             #threading.Thread(target=self.client.connexion_serveur, args=("localhost", 5000)).start()                           
     
-            #print(self.mod)
+
+            self.perform_event_queue()
+
             #Affiche ce qu'il doit être affiché en fonction du mode (reglage/menu/game)
             self.state.a_state(self.mod)
 
@@ -132,6 +145,15 @@ class Game:
             self.dt = self.fpsClock.tick(self.fps) / 1000
 
         pygame.quit()
+
+    def perform_event_queue(self):
+        """Traite les évenements globaux"""
+        while not event_queue.empty():
+            event = event_queue.get()
+            if event["type"] == "SERVER_DISCONNECTED":
+                self.state.add_alert("Déconnecté du serveur",5)
+
+                self.mod = "menu"
 
     def connect_serv(self):
         self.mod = self.state.connexion_serv(self.client)  #Connexion serv
