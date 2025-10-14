@@ -1,8 +1,8 @@
 import pygame, threading
-from texture import color
-from C_button import Button
-from alert import Alert
-from C_load import Load
+from client.rendering.texture import color
+from client.C_button import Button
+from client.alert import Alert
+from client.C_load import Load
 
 
 class State:

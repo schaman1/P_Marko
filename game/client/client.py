@@ -1,6 +1,6 @@
 import socket, json, threading
 import time
-from events import event_queue
+from client.events import event_queue
 
 class Client:
 

@@ -1,8 +1,8 @@
 import pygame, threading
-from state import State
-from client import Client
-from game.serv.server import Server
-from events import event_queue
+from client.state import State
+from client.client import Client
+from serv.server import Server
+from client.events import event_queue
 
 #from C_inGame import InGame
 #from C_card import Card
