@@ -18,6 +18,9 @@ screenSize = (screen.get_width(),screen.get_height())
 #ecriture
 font = pygame.font.SysFont(None, 48)
 
+bg = pygame.image.load("../../assets/Cards.com.png").convert()
+fps = 1000
+fpsClock = pygame.time.Clock()
 
 def run():
     running = True
@@ -29,19 +32,22 @@ def run():
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = event.pos
-                map.destroy_rect(x, y, 10)
+                map.destroy_rect(x, y, 100)
 
-        screen.fill((255, 255, 255))
+        screen.blit(bg, (0, 0))
+        #screen.fill((255, 255, 255))
 
         map.draw_map()
 
         # Update the display
         pygame.display.flip()
 
+        #fpsClock.tick(fps) / 1000
+
         #self.dt = self.fpsClock.tick(self.fps) / 1000
 
     pygame.quit()
 
-map = Read_map("../../assets/map_1.png",screen)
+map = Read_map("../../assets/map_1.png",screen,1)
 
 run()
