@@ -1,5 +1,6 @@
 import pygame
 import math
+import random
 
 class Read_map:
     def __init__(self, filename, screen,size):
@@ -22,6 +23,7 @@ class Read_map:
         # sets plutôt que listes = O(1) lookup, remove, add
         self.cell_to_update = set()
         self.circle_patterns = {}
+        self.border_patterns = {}
 
         # pré-calcul des rects pour chaque cellule
         self.rect_grid = [
@@ -44,6 +46,9 @@ class Read_map:
             for cx in range(self.cells_w):
                 color = self.get_color(cx * self.cell_size, cy * self.cell_size)
                 if color != (255, 255, 255):
+                    if color == (97,66,0):
+                        color = (random.randint(150,200),random.randint(75,140),0)  #
+                        #color = (random.randint(90,104),random.randint(49,83),0)  # noir indestructible
                     self.grid[cy][cx] = color
 
     def create_map(self):
@@ -63,12 +68,22 @@ class Read_map:
         """Retourne une liste d'offsets pour un rayon donné, pré-calculée"""
         if r_cells not in self.circle_patterns:
             pattern = []
-            for dy in range(-r_cells, r_cells + 1):
-                for dx in range(-r_cells, r_cells + 1):
+            pattern_border = []
+            for dy in range(-r_cells-1, r_cells + 2):
+                for dx in range(-r_cells-1, r_cells + 2):
                     if dx*dx + dy*dy <= r_cells*r_cells:
                         pattern.append((dx, dy))
+                    elif dx*dx + dy*dy <= (r_cells+1)*(r_cells+1):
+                        pattern_border.append((dx, dy))
             self.circle_patterns[r_cells] = pattern
+            self.border_patterns[r_cells] = pattern_border
         return self.circle_patterns[r_cells]
+    
+
+    def draw_rect(self, cx, cy):
+        """Dessine un rectangle centré en (x, y)"""
+        if 0 <= cx < self.cells_w and 0 <= cy < self.cells_h:
+            pygame.draw.rect(self.canva, (255,0,0), self.rect_grid[cy][cx])
 
     def destroy_rect(self, x, y, r_cells):
         """Détruit un cercle de rayon 'rayon' autour de (x, y)"""
@@ -84,30 +99,11 @@ class Read_map:
                     self.grid[ny][nx] = None
                     # suppression graphique
                     self.canva.fill((255, 255, 255, 0), self.rect_grid[ny][nx])
+        for dx,dy in self.border_patterns[r_cells]:
+            if 0 <= cx+dx < self.cells_w and 0 <= cy+dy < self.cells_h:
+                self.cell_to_update.add((cx+dx,cy+dy))
+            #self.draw_rect(dx+cx,dy+cy)
 
-                    # ajout au set si la cellule au-dessus existe
-                    if ny > 0 :
-                        if self.grid[ny - 1][nx] is not None:
-                            self.cell_to_update.add((nx, ny - 1))
-                        else : 
-                            nx = nx + (1 if nx >= 0 else -1)
-                            if nx < self.cells_h and nx > 0 and self.grid[ny][nx ] is not None:
-                                self.cell_to_update.add((nx , ny))
-
-                    elif ny < 0 :
-                        if self.grid[ny + 1][nx] is not None:
-                            self.cell_to_update.add((nx, ny + 1))
-                        else : 
-                            nx = nx + (1 if nx >= 0 else -1)
-                            if nx < self.cells_h and nx > 0 and self.grid[ny][nx ] is not None:
-                                self.cell_to_update.add((nx , ny))
-
-                    elif ny == 0 :
-                        if nx > 0 and self.grid[ny][nx - 1] is not None:
-                            self.cell_to_update.add((nx - 1, ny))
-
-                        elif nx < 0 and self.grid[ny][nx + 1] is not None:
-                            self.cell_to_update.add((nx + 1, ny))
 
     def move_cells(self):
         """Met à jour les cellules qui doivent tomber"""
@@ -115,14 +111,22 @@ class Read_map:
         to_remove = set()
 
         for (x, y) in self.cell_to_update:
+            #print(y,self.cells_h)
             if self.grid[y][x] is not None and self.grid[y][x] != (0, 0, 0):  # si la cellule existe et n'est pas noire
+                
                 if y + 1 < self.cells_h and self.grid[y + 1][x] is None:
                     self.update_cell(x, y, y+1,x)
                     # on ajoute les voisins à surveiller
                     if y - 1 >= 0:
                         to_add.add((x, y - 1))
-                    if y + 1 < self.cells_h:
-                        to_add.add((x, y + 1))
+
+                    if x + 1 < self.cells_w:
+                        to_add.add((x + 1, y + 1))
+
+                    if x - 1 >= 0:
+                        to_add.add((x - 1, y + 1))
+
+                    to_add.add((x, y + 1))
 
                 elif y + 1 < self.cells_h and x - 1 >= 0 and self.grid[y + 1][x - 1] is None:
                     self.update_cell(x,y,y+1,x-1)
@@ -130,7 +134,7 @@ class Read_map:
                     if y - 1 >= 0:
                         to_add.add((x, y - 1))
 
-                    if y + 1 < self.cells_h and x + 1 < self.cells_w:
+                    if x + 1 < self.cells_w:
                         to_add.add((x + 1, y + 1))
                     
                     to_add.add((x - 1, y + 1))
@@ -141,7 +145,7 @@ class Read_map:
                     if y - 1 >= 0:
                         to_add.add((x, y - 1))
 
-                    if y + 1 < self.cells_h and x - 1 >= 0:
+                    if x - 1 >= 0:
                         to_add.add((x - 1, y + 1))
                     
                     to_add.add((x + 1, y + 1))
@@ -150,14 +154,12 @@ class Read_map:
                     if y - 1 >= 0:
                         to_add.add((x, y - 1))
 
-                    if y + 1 < self.cells_h and x + 1 < self.cells_w:
-                        to_add.add((x + 1, y + 1))
+                    #if y + 1 < self.cells_h and x + 1 < self.cells_w:
+                    #    to_add.add((x + 1, y + 1))
                     # bloquée, à supprimer
                 
                 to_remove.add((x, y))
 
-            #elif y - self.density < self.cells_h and x+1 < self.cells_w and self.grid[y - self.density][x+1] is not None and self.grid[y - self.density][x] is None:
-                #to_add.add((x+1, y-self.density))
             else:
                 # cellule vide => inutile de la garder
                 to_remove.add((x, y))
