@@ -10,7 +10,7 @@ class Read_map:
         self.cells_w = self.width // self.cell_size
         self.cells_h = self.height // self.cell_size
 
-        self.density = 2  # 1 = pleine résolution, 2 = 1 pixel sur 2, etc.
+        self.density = (3,1)  # 1 = pleine résolution, 2 = 1 pixel sur 2, etc.
 
         self.map = pygame.image.load(filename).convert()
         self.map = pygame.transform.scale(self.map, (self.width, self.height))
@@ -85,10 +85,55 @@ class Read_map:
         if 0 <= cx < self.cells_w and 0 <= cy < self.cells_h:
             pygame.draw.rect(self.canva, (255,0,0), self.rect_grid[cy][cx])
 
-    def destroy_rect(self, x, y, r_cells):
-        """Détruit un cercle de rayon 'rayon' autour de (x, y)"""
+    def what_to_do(self,x,y):
         cx = x // self.cell_size
         cy = y // self.cell_size
+        if 0 <= cx < self.cells_w and 0 <= cy < self.cells_h:
+            if self.grid[cy][cx] is not None and self.grid[cy][cx] != (0, 0, 0):  # noir indestructible
+                self.destroy_rect(cx,cy, 15)
+                print("destroy")
+            elif self.grid[cy][cx] is None:
+                self.create_circle_sand(cx,cy,15)
+                print("create")
+        return "nothing"
+    
+    def create_circle_sand(self,x,y, r_cells):
+        for dx,dy in self.get_circle_pattern(r_cells):
+            cx = x + dx
+            cy = y + dy
+            if 0 <= cx < self.width and 0 <= cy < self.height:
+                if 0 <= cx < self.cells_w and 0 <= cy < self.cells_h:
+                    if self.grid[cy][cx] is None:
+                        color = (random.randint(150,200),random.randint(75,140),0)  #
+                        #color = (random.randint(90,104),random.randint(49,83),0)  # noir indestructible
+                        self.grid[cy][cx] = color
+                        pygame.draw.rect(self.canva, color, self.rect_grid[cy][cx])
+                        self.cell_to_update.add((cx,cy))
+
+    def destroy_rect(self, cx, cy, r_cells):
+        """Détruit un cercle de rayon 'rayon' autour de (x, y)"""
+
+        '''
+                        for i in range(0,self.density[0]):
+
+                            if y + 1 < self.cells_h and x +i >= 0 and self.grid[y + 1][x +i] is None:
+                                self.update_cell(x,y,y+1,x+i)
+                                # on ajoute les voisins à surveiller
+                                if y - 1 >= 0:
+                                    to_add.add((x, y - 1))
+
+                                break
+                        
+
+                        for j in range(0,self.density[0]+1):
+                            if x -j < self.cells_w:
+                                to_add.add((x -j, y + 1))
+                            if x +j < self.cells_w:
+                                to_add.add((x +j, y + 1))
+
+                            #if y + 1 < self.cells_h and x + 1 < self.cells_w:
+                            #    to_add.add((x + 1, y + 1))
+                            # bloquée, à supprimer'''
 
         for dx, dy in self.get_circle_pattern(r_cells):
             nx = cx + dx
@@ -103,7 +148,6 @@ class Read_map:
             if 0 <= cx+dx < self.cells_w and 0 <= cy+dy < self.cells_h:
                 self.cell_to_update.add((cx+dx,cy+dy))
             #self.draw_rect(dx+cx,dy+cy)
-
 
     def move_cells(self):
         """Met à jour les cellules qui doivent tomber"""
@@ -120,35 +164,37 @@ class Read_map:
                     if y - 1 >= 0:
                         to_add.add((x, y - 1))
 
-                    if x + 1 < self.cells_w:
-                        to_add.add((x + 1, y + 1))
+                    if x + self.density[0] < self.cells_w:
+                        to_add.add((x + self.density[0], y + 1))
 
-                    if x - 1 >= 0:
-                        to_add.add((x - 1, y + 1))
+                    if x - self.density[0] >= 0:
+                        to_add.add((x - self.density[0], y + 1))
 
                     to_add.add((x, y + 1))
 
-                elif y + 1 < self.cells_h and x - 1 >= 0 and self.grid[y + 1][x - 1] is None:
-                    self.update_cell(x,y,y+1,x-1)
+                    
+
+                elif y + 1 < self.cells_h and x - self.density[0] >= 0 and self.grid[y + 1][x - self.density[0]] is None:
+                    self.update_cell(x,y,y+1,x-self.density[0])
                     # on ajoute les voisins à surveiller
                     if y - 1 >= 0:
                         to_add.add((x, y - 1))
 
-                    if x + 1 < self.cells_w:
-                        to_add.add((x + 1, y + 1))
+                    if x + self.density[0] < self.cells_w:
+                        to_add.add((x + self.density[0], y + 1))
                     
-                    to_add.add((x - 1, y + 1))
+                    to_add.add((x - self.density[0], y + 1))
 
-                elif y + 1 < self.cells_h and x + 1 < self.cells_w and self.grid[y + 1][x + 1] is None:
-                    self.update_cell(x,y,y+1,x+1)
+                elif y + 1 < self.cells_h and x + self.density[0] < self.cells_w and self.grid[y + 1][x + self.density[0]] is None:
+                    self.update_cell(x,y,y+1,x+self.density[0])
                     # on ajoute les voisins à surveiller
                     if y - 1 >= 0:
                         to_add.add((x, y - 1))
 
                     if x - 1 >= 0:
-                        to_add.add((x - 1, y + 1))
+                        to_add.add((x - self.density[0], y + 1))
                     
-                    to_add.add((x + 1, y + 1))
+                    to_add.add((x + self.density[0], y + 1))
                 
                 else:
                     if y - 1 >= 0:
@@ -167,6 +213,11 @@ class Read_map:
         # maj des sets en une seule opération (rapide)
         self.cell_to_update -= to_remove
         self.cell_to_update |= to_add
+
+    def add_to_list(self, x, y,l):
+        """Ajoute une cellule à la liste des cellules à mettre à jour"""
+        if 0 <= x < self.cells_w and 0 <= y < self.cells_h:
+            l.add((x, y))
 
     def update_cell(self, x, y,newy,newx):
         """Fait tomber une cellule"""

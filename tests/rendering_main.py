@@ -32,7 +32,7 @@ def run():
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = event.pos
-                map.destroy_rect(x, y, 30)
+                map.what_to_do(x, y)
 
         screen.blit(bg, (0, 0))
         #screen.fill((255, 255, 255))
@@ -48,7 +48,7 @@ def run():
 
     pygame.quit()
 
-map = Read_map("../game/assets/map_1.png",screen,4)
+map = Read_map("../game/assets/map_1.png",screen,2)
 
 run()
 
