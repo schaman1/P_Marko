@@ -10,7 +10,7 @@ class Read_map:
         self.cells_w = self.width // self.cell_size
         self.cells_h = self.height // self.cell_size
 
-        self.density = (3,1)  # 1 = pleine résolution, 2 = 1 pixel sur 2, etc.
+        self.density = (2,1)  # 1 = pleine résolution, 2 = 1 pixel sur 2, etc.
 
         self.map = pygame.image.load(filename).convert()
         self.map = pygame.transform.scale(self.map, (self.width, self.height))
@@ -91,10 +91,8 @@ class Read_map:
         if 0 <= cx < self.cells_w and 0 <= cy < self.cells_h:
             if self.grid[cy][cx] is not None and self.grid[cy][cx] != (0, 0, 0):  # noir indestructible
                 self.destroy_rect(cx,cy, 15)
-                print("destroy")
             elif self.grid[cy][cx] is None:
                 self.create_circle_sand(cx,cy,15)
-                print("create")
         return "nothing"
     
     def create_circle_sand(self,x,y, r_cells):
@@ -172,33 +170,38 @@ class Read_map:
 
                     to_add.add((x, y + 1))
 
-                    
+                else :
 
-                elif y + 1 < self.cells_h and x - self.density[0] >= 0 and self.grid[y + 1][x - self.density[0]] is None:
-                    self.update_cell(x,y,y+1,x-self.density[0])
-                    # on ajoute les voisins à surveiller
-                    if y - 1 >= 0:
-                        to_add.add((x, y - 1))
+                    for i in range(1,self.density[0]+1):
 
-                    if x + self.density[0] < self.cells_w:
-                        to_add.add((x + self.density[0], y + 1))
-                    
-                    to_add.add((x - self.density[0], y + 1))
+                        if y + 1 < self.cells_h and x - i >= 0 and self.grid[y + 1][x - self.density[0]] is None:
+                            self.update_cell(x,y,y+1,x-i)
+                            # on ajoute les voisins à surveiller
+                            if y - 1 >= 0:
+                                to_add.add((x, y - 1))
 
-                elif y + 1 < self.cells_h and x + self.density[0] < self.cells_w and self.grid[y + 1][x + self.density[0]] is None:
-                    self.update_cell(x,y,y+1,x+self.density[0])
-                    # on ajoute les voisins à surveiller
-                    if y - 1 >= 0:
-                        to_add.add((x, y - 1))
+                            for j in range(1,self.density[0]+1):
+                                if x + i < self.cells_w:
+                                    to_add.add((x + j, y + 1))
+                                
+                                to_add.add((x - j, y + 1))
+                            break
 
-                    if x - 1 >= 0:
-                        to_add.add((x - self.density[0], y + 1))
-                    
-                    to_add.add((x + self.density[0], y + 1))
+                        elif y + 1 < self.cells_h and x + i < self.cells_w and self.grid[y + 1][x + i] is None:
+                            self.update_cell(x,y,y+1,x+i)
+                            # on ajoute les voisins à surveiller
+                            if y - 1 >= 0:
+                                to_add.add((x, y - 1))
+
+                            for j in range(1,self.density[0]+1):
+                                if x - 1 >= 0:
+                                    to_add.add((x - j, y + 1))
+                                
+                                to_add.add((x + j, y + 1))
+                            break
                 
-                else:
-                    if y - 1 >= 0:
-                        to_add.add((x, y - 1))
+                if y - 1 >= 0: #A opti
+                    to_add.add((x, y - 1))
 
                     #if y + 1 < self.cells_h and x + 1 < self.cells_w:
                     #    to_add.add((x + 1, y + 1))
