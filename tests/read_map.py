@@ -1,6 +1,7 @@
 import pygame
 import math
 import random
+from particles import sand,wood
 
 class Read_map:
     def __init__(self, filename, screen,size):
@@ -47,17 +48,17 @@ class Read_map:
                 color = self.get_color(cx * self.cell_size, cy * self.cell_size)
                 if color != (255, 255, 255):
                     if color == (97,66,0):
-                        color = (random.randint(150,200),random.randint(75,140),0)  #
+                        self.grid[cy][cx] = sand(cx,cy)
                         #color = (random.randint(90,104),random.randint(49,83),0)  # noir indestructible
-                    self.grid[cy][cx] = color
+                    else :
+                        self.grid[cy][cx] = wood(cx,cy)  # noir indestructible
 
     def create_map(self):
         """Dessine toute la carte une fois au démarrage"""
         for cy in range(self.cells_h):
             for cx in range(self.cells_w):
-                color = self.grid[cy][cx]
-                if color:
-                    pygame.draw.rect(self.canva, color, self.rect_grid[cy][cx])
+                if self.grid[cy][cx] is not None:
+                    pygame.draw.rect(self.canva, self.grid[cy][cx].color, self.rect_grid[cy][cx])
 
     def draw_map(self):
         """Dessine la map sur l'écran"""
@@ -99,19 +100,17 @@ class Read_map:
         for dx,dy in self.get_circle_pattern(r_cells):
             cx = x + dx
             cy = y + dy
-            if 0 <= cx < self.width and 0 <= cy < self.height:
-                if 0 <= cx < self.cells_w and 0 <= cy < self.cells_h:
+            if 0 <= cx < self.width  and 0 <= cy < self.height :
+                if cx< self.cells_w and cy < self.cells_h:
                     if self.grid[cy][cx] is None:
                         color = (random.randint(150,200),random.randint(75,140),0)  #
                         #color = (random.randint(90,104),random.randint(49,83),0)  # noir indestructible
-                        self.grid[cy][cx] = color
+                        self.grid[cy][cx] = sand(cx,cy)
                         pygame.draw.rect(self.canva, color, self.rect_grid[cy][cx])
                         self.cell_to_update.add((cx,cy))
 
     def destroy_rect(self, cx, cy, r_cells):
         """Détruit un cercle de rayon 'rayon' autour de (x, y)"""
-
-
 
         for dx, dy in self.get_circle_pattern(r_cells):
             nx = cx + dx
@@ -122,6 +121,7 @@ class Read_map:
                     self.grid[ny][nx] = None
                     # suppression graphique
                     self.canva.fill((255, 255, 255, 0), self.rect_grid[ny][nx])
+
         for dx,dy in self.border_patterns[r_cells]:
             if 0 <= cx+dx < self.cells_w and 0 <= cy+dy < self.cells_h:
                 self.cell_to_update.add((cx+dx,cy+dy))
@@ -129,88 +129,41 @@ class Read_map:
 
     def move_cells(self):
         """Met à jour les cellules qui doivent tomber"""
-        to_add = set()
+
         to_remove = set()
+        to_add = set()
 
         for (x, y) in self.cell_to_update:
             #print(y,self.cells_h)
-            if self.grid[y][x] is not None and self.grid[y][x] != (0, 0, 0):  # si la cellule existe et n'est pas noire
+            if self.grid[y][x] is not None and self.grid[y][x].color != (0, 0, 0):  # si la cellule existe et n'est pas noire
                 
-                if y + 1 < self.cells_h and self.grid[y + 1][x] is None:
-                    self.update_cell(x, y, y+1,x)
-                    # on ajoute les voisins à surveiller
-                    if y - 1 >= 0:
-                        to_add.add((x, y - 1))
+                moved, (newx, newy), new_set = self.grid[y][x].update_position(self.grid,self.cells_h,self.cells_w)
 
-                    if x + self.density[0] < self.cells_w:
-                        to_add.add((x + self.density[0], y + 1))
-
-                    if x - self.density[0] >= 0:
-                        to_add.add((x - self.density[0], y + 1))
-
-                    to_add.add((x, y + 1))
-
-                elif random.random() < 0.5:  # essaie de moins unifier le sable:
-
-                    #dir = random.choice([-1,1])  # gauche ou droite
-                    #l = list(range(1*dir,dir*(self.density[0]+1),dir))
-                    #random.shuffle(l)
-
-                    for i in range(1,self.density[0]+1):
-                    #for i in range(1,self.density[0]+1):
-                    #if True : 
-
-                        if y + 1 < self.cells_h and x - i >= 0 and self.grid[y + 1][x - i] is None:
-                            self.update_cell(x,y,y+1,x-i)
-                            # on ajoute les voisins à surveiller
-                            if y - 1 >= 0:
-                                to_add.add((x, y - 1))
-
-
-                            for j in range(1,self.density[0]+1):
-                                if x + j < self.cells_w:
-                                    to_add.add((x + j, y + 1))
-                                
-                                to_add.add((x - j, y + 1))
-                            break
-
-                        elif y + 1 < self.cells_h and x + i < self.cells_w and self.grid[y + 1][x + i] is None:
-                            self.update_cell(x,y,y+1,x+i)
-                            # on ajoute les voisins à surveiller
-                            if y - 1 >= 0:
-                                to_add.add((x, y - 1))
-
-                            for j in range(1,self.density[0]+1):
-                                if x - j >= 0:
-                                    to_add.add((x - j, y + 1))
-                                
-                                to_add.add((x + j, y + 1))
-                            break
-                
-                if y - 1 >= 0: #A opti
-                    to_add.add((x, y - 1))
-
+                if moved: 
+                    self.update_cell(x,y,newx,newy)
+                    to_add |= new_set
                     #if y + 1 < self.cells_h and x + 1 < self.cells_w:
                     #    to_add.add((x + 1, y + 1))
                     # bloquée, à supprimer                    
                 
-            to_remove.add((x, y))
+                to_remove.add((x, y))
 
         # maj des sets en une seule opération (rapide)
-        self.cell_to_update -= to_remove
         self.cell_to_update |= to_add
+        self.cell_to_update -= to_remove
 
     def add_to_list(self, x, y,l):
         """Ajoute une cellule à la liste des cellules à mettre à jour"""
         if 0 <= x < self.cells_w and 0 <= y < self.cells_h:
             l.add((x, y))
 
-    def update_cell(self, x, y,newy,newx):
+    def update_cell(self, x, y,newx,newy):
         """Fait tomber une cellule"""
         # échange dans la grille
+
         self.grid[newy][newx], self.grid[y][x] = self.grid[y][x], None
 
         # effacer ancienne position
         self.canva.fill((255, 255, 255, 0), self.rect_grid[y][x])
         # dessiner à la nouvelle position
-        pygame.draw.rect(self.canva, self.grid[newy][newx], self.rect_grid[newy][newx])
+        pygame.draw.rect(self.canva, self.grid[newy][newx].color, self.rect_grid[newy][newx])

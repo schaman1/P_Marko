@@ -48,7 +48,7 @@ def run():
 
     pygame.quit()
 
-map = Read_map("../game/assets/map_1.png",screen,2)
+map = Read_map("../game/assets/map_1.png",screen,6)
 
 run()
 
