@@ -1,7 +1,7 @@
 import pygame
 import math
 import random
-from particles import sand,wood
+from particles import sand,wood, water
 
 class Read_map:
     def __init__(self, filename, screen,size):
@@ -47,9 +47,12 @@ class Read_map:
             for cx in range(self.cells_w):
                 color = self.get_color(cx * self.cell_size, cy * self.cell_size)
                 if color != (255, 255, 255):
-                    if color == (97,66,0):
+                    if color == (255, 255, 0):  # sable
                         self.grid[cy][cx] = sand(cx,cy)
                         #color = (random.randint(90,104),random.randint(49,83),0)  # noir indestructible
+                    elif color == (0, 0, 255):  # eau
+                        self.grid[cy][cx] = water(cx,cy)
+                        #color = (0,0,255)
                     else :
                         self.grid[cy][cx] = wood(cx,cy)  # noir indestructible
 
