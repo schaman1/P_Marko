@@ -19,7 +19,7 @@ screenSize = (screen.get_width(),screen.get_height())
 font = pygame.font.SysFont(None, 48)
 
 bg = pygame.image.load("../game/assets/bg1.png").convert()
-fps = 1000
+fps = 5
 fpsClock = pygame.time.Clock()
 
 def run():
@@ -42,7 +42,7 @@ def run():
         # Update the display
         pygame.display.flip()
 
-        #fpsClock.tick(fps) / 1000
+        fpsClock.tick(fps) / 1000
 
         #self.dt = self.fpsClock.tick(self.fps) / 1000
 

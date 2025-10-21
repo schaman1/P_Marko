@@ -49,11 +49,11 @@ class Read_map:
                 if color != (255, 255, 255):
                     if color == (255, 255, 0):  # sable
                         self.grid[cy][cx] = sand(cx,cy)
-                        #self.cell_to_update.add((cx,cy))
+                        self.cell_to_update.add((cx,cy))
                         #color = (random.randint(90,104),random.randint(49,83),0)  # noir indestructible
                     elif color == (0, 0, 255):  # eau
-                        self.grid[cy][cx] = water(cx,cy)
-                        #self.cell_to_update.add((cx,cy))
+                        self.grid[cy][cx] = water(cx,cy,self.cells_w,self.cells_h)
+                        self.cell_to_update.add((cx,cy))
                         #color = (0,0,255)
                     else :
                         self.grid[cy][cx] = wood(cx,cy)  # noir indestructible
@@ -110,7 +110,7 @@ class Read_map:
                     if self.grid[cy][cx] is None:
                         #color = (random.randint(150,200),random.randint(75,140),0)  #
                         #color = (random.randint(90,104),random.randint(49,83),0)  # noir indestructible
-                        self.grid[cy][cx] = water(cx,cy)
+                        self.grid[cy][cx] = water(cx,cy,self.cells_w,self.cells_h)
                         pygame.draw.rect(self.canva, self.grid[cy][cx].color, self.rect_grid[cy][cx])
                         self.cell_to_update.add((cx,cy))
 
@@ -144,13 +144,13 @@ class Read_map:
                 
                 moved, (newx, newy), new_set = self.grid[y][x].update_position(self.grid,self.cells_h,self.cells_w)
 
-                if moved: 
-                    if newx is not None:
-                        self.update_cell(x,y,newx,newy)
-                    to_add |= new_set
-                    #if y + 1 < self.cells_h and x + 1 < self.cells_w:
-                    #    to_add.add((x + 1, y + 1))
-                    # bloquée, à supprimer                    
+                if moved is None:
+                    self.destroy_cell(x,y)
+
+                elif moved is True: 
+                        if newx is not None:
+                            self.update_cell(x,y,newx,newy)
+                        to_add |= new_set                 
                 
                 to_remove.add((x, y))
 
@@ -162,6 +162,13 @@ class Read_map:
         """Ajoute une cellule à la liste des cellules à mettre à jour"""
         if 0 <= x < self.cells_w and 0 <= y < self.cells_h:
             l.add((x, y))
+
+    def destroy_cell(self, x, y):
+        """Détruit une cellule"""
+        # suppression dans la grille
+        self.grid[y][x] = None
+        # suppression graphique
+        self.canva.fill((255, 255, 255, 0), self.rect_grid[y][x])
 
     def update_cell(self, x, y,newx,newy):
         """Fait tomber une cellule"""
