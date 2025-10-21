@@ -90,9 +90,9 @@ class water:
         self.color = (0,0,255)
 
     def add_neighbors(self, l, x, y):
-        if 0 <= x-1 :
+        if x-1 >= 0 :
             l.add((x-1, y))
-            if 0 <= y-1 :
+            if y-1 >= 0:
                 l.add((x-1, y-1))
         if x +1 < self.cells_w:
             l.add((x+1, y))
@@ -144,9 +144,9 @@ class water:
                     if self.move[0] is False and self.move[1] is False:
                         choice = random.choice([-1,1])
                         if choice == -1:
-                            self.move[0] = [True]
+                            self.move[0] = True
                         else:
-                            self.move[1] = [True]
+                            self.move[1] = True
 
                     if self.move[0] : 
                         if self.x - 1 >= 0 and grid[self.y][self.x - 1] is None:
