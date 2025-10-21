@@ -49,9 +49,11 @@ class Read_map:
                 if color != (255, 255, 255):
                     if color == (255, 255, 0):  # sable
                         self.grid[cy][cx] = sand(cx,cy)
+                        #self.cell_to_update.add((cx,cy))
                         #color = (random.randint(90,104),random.randint(49,83),0)  # noir indestructible
                     elif color == (0, 0, 255):  # eau
                         self.grid[cy][cx] = water(cx,cy)
+                        #self.cell_to_update.add((cx,cy))
                         #color = (0,0,255)
                     else :
                         self.grid[cy][cx] = wood(cx,cy)  # noir indestructible
@@ -106,10 +108,10 @@ class Read_map:
             if 0 <= cx < self.width  and 0 <= cy < self.height :
                 if cx< self.cells_w and cy < self.cells_h:
                     if self.grid[cy][cx] is None:
-                        color = (random.randint(150,200),random.randint(75,140),0)  #
+                        #color = (random.randint(150,200),random.randint(75,140),0)  #
                         #color = (random.randint(90,104),random.randint(49,83),0)  # noir indestructible
-                        self.grid[cy][cx] = sand(cx,cy)
-                        pygame.draw.rect(self.canva, color, self.rect_grid[cy][cx])
+                        self.grid[cy][cx] = water(cx,cy)
+                        pygame.draw.rect(self.canva, self.grid[cy][cx].color, self.rect_grid[cy][cx])
                         self.cell_to_update.add((cx,cy))
 
     def destroy_rect(self, cx, cy, r_cells):
@@ -137,13 +139,14 @@ class Read_map:
         to_add = set()
 
         for (x, y) in self.cell_to_update:
-            #print(y,self.cells_h)
+            #print(y)
             if self.grid[y][x] is not None and self.grid[y][x].color != (0, 0, 0):  # si la cellule existe et n'est pas noire
                 
                 moved, (newx, newy), new_set = self.grid[y][x].update_position(self.grid,self.cells_h,self.cells_w)
 
                 if moved: 
-                    self.update_cell(x,y,newx,newy)
+                    if newx is not None:
+                        self.update_cell(x,y,newx,newy)
                     to_add |= new_set
                     #if y + 1 < self.cells_h and x + 1 < self.cells_w:
                     #    to_add.add((x + 1, y + 1))
@@ -152,8 +155,8 @@ class Read_map:
                 to_remove.add((x, y))
 
         # maj des sets en une seule opération (rapide)
-        self.cell_to_update |= to_add
         self.cell_to_update -= to_remove
+        self.cell_to_update |= to_add
 
     def add_to_list(self, x, y,l):
         """Ajoute une cellule à la liste des cellules à mettre à jour"""

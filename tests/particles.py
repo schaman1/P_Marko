@@ -98,81 +98,98 @@ class water:
             if self.y - 1 >= 0:
                 to_add.add((self.x, self.y - 1))
 
-            if self.x + self.density[0] < cells_w:
-                to_add.add((self.x + self.density[0], self.y - 1))
+            if self.x + 1 < cells_w:
+                to_add.add((self.x + 1, self.y))
 
-            if self.x - self.density[0] >= 0:
-                to_add.add((self.x - self.density[0], self.y - 1))
+            if self.x - 1 >= 0:
+                to_add.add((self.x - 1, self.y))
 
-            to_add.add((self.x, self.y + 1))
             self.y += 1
+            to_add.add((self.x, self.y))
 
             return (True,( self.x,self.y),to_add) #if moved
 
         else:#elif random.random() < 1:  # essaie de moins unifier le sable:
 
-            for i in range(1,self.density[0]+1):
+            if False :
+                for i in range(1,self.density[0]+1):
 
-                if self.y + 1 < cells_h and self.x - i >= 0 and grid[self.y + 1][self.x - i] is None:
-                    # on ajoute les voisins à surveiller
-                    if self.y - 1 >= 0:
-                        to_add.add((self.x, self.y - 1))
+                    if self.y + 1 < cells_h and self.x - i >= 0 and grid[self.y + 1][self.x - i] is None:
+                        # on ajoute les voisins à surveiller
+                        if self.y - 1 >= 0:
+                            to_add.add((self.x, self.y - 1))
 
 
-                    for j in range(1,self.density[0]+1):
-                        if self.x + j < cells_w:
-                            to_add.add((self.x + j, self.y - 1))
+                        for j in range(1,self.density[0]+1):
+                            if self.x + j < cells_w:
+                                to_add.add((self.x + j, self.y - 1))
+                            
+                            to_add.add((self.x - i, self.y + 1))
+
+                        self.x -= i
+                        self.y += 1
                         
-                        to_add.add((self.x - i, self.y + 1))
+                        return (True,(self.x,self.y),to_add) #if moved
 
-                    self.x -= i
-                    self.y += 1
-                    
-                    return (True,(self.x,self.y),to_add) #if moved
+                    elif self.y + 1 < cells_h and self.x + i < cells_w and grid[self.y + 1][self.x + i] is None:
+                        # on ajoute les voisins à surveiller
+                        if self.y - 1 >= 0:
+                            to_add.add((self.x, self.y - 1))
 
-                elif self.y + 1 < cells_h and self.x + i < cells_w and grid[self.y + 1][self.x + i] is None:
-                    # on ajoute les voisins à surveiller
-                    if self.y - 1 >= 0:
-                        to_add.add((self.x, self.y - 1))
+                        for j in range(1,self.density[0]+1):
+                            if self.x - j >= 0:
+                                to_add.add((self.x - j, self.y - 1))
+                            
+                            to_add.add((self.x + j, self.y + 1))
 
-                    for j in range(1,self.density[0]+1):
-                        if self.x - j >= 0:
-                            to_add.add((self.x - j, self.y - 1))
-                        
-                        to_add.add((self.x + j, self.y + 1))
+                        self.x += i
+                        self.y += 1
 
-                    self.x += i
-                    self.y += 1
-
-                    return (True,(self.x,self.y),to_add) #if moved
+                        return (True,(self.x,self.y),to_add) #if moved
                 
-                # choisir une direction
-                else :
-                    if not self.move[0] and not self.move[1]:
-                        choice = random.choice([-1,1])
-                        if choice == -1:
-                            self.move = [True,False]
-                        else:
-                            self.move = [False,True]
+            # choisir une direction
+            else :
+                #print("move right")
+                if self.move[0] is False and self.move[1] is False:
+                    choice = random.choice([-1,1])
+                    if choice == -1:
+                        self.move = [True,False]
+                    else:
+                        self.move = [False,True]
 
-                    if self.move[0] : 
-                        if self.x - 1 >= 0 and grid[self.y][self.x - 1] is None:
+                if self.move[0] : 
+                    if self.x - 1 >= 0 and grid[self.y][self.x - 1] is None:
+                        #print("move left")
+                        if self.x + 1 < cells_w:
                             to_add.add((self.x + 1, self.y))
-                            self.x -= 1
-                            to_add.add((self.x, self.y))
-                            return (True,(self.x,self.y),to_add) #if moved
-                        else :
-                            self.move[0] = False
-                            return (False,(None,None),None) #if not moved
-                    
-                    elif self.move[1] :
-                        if self.x + 1 >= cells_w and grid[self.y][self.x + 1] is None:
+                        to_add.add((self.x , self.y-1))
+                        self.x -= 1
+                        to_add.add((self.x, self.y))
+                        return (True,(self.x,self.y),to_add) #if moved
+                    else :
+                        self.move[0] = False
+                        #if self.move[1] is None :
+                        self.move[1] = True
+                        to_add.add((self.x, self.y))
+                        return (True,(None,None),to_add)
+                        #else :
+                            #return (False,(None,None),None) #if not moved
+                
+                elif self.move[1] :
+                    if self.x + 1 < cells_w and grid[self.y][self.x + 1] is None:
+                        if self.x - 1 >= 0:
                             to_add.add((self.x - 1, self.y))
-                            self.x += 1
-                            to_add.add((self.x, self.y))
-                            return (True,(self.x,self.y),to_add) #if moved
-                        else :
-                            self.move[1] = False
-                            return (False,(None,None),None) #if not moved
-        
+                        to_add.add((self.x , self.y-1))
+                        self.x += 1
+                        to_add.add((self.x, self.y))
+                        return (True,(self.x,self.y),to_add) #if moved
+                    else :
+                        self.move[1] = False
+                        #if self.move[0] is None :
+                        self.move[0] = True
+                        to_add.add((self.x, self.y))
+                        return (True,(None,None),to_add)
+                        #else :
+                         #   return (False,(None,None),None) #if not moved
+    
         return (False,(None,None),None) #if not moved
