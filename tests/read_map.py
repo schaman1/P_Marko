@@ -69,8 +69,8 @@ class Read_map:
     def draw_map(self):
         """Dessine la map sur l'écran"""
         #Pour un robinet
-        #self.grid[0][0] = Water(0,0,self.cells_w,self.cells_h)
-        #self.cell_to_update.add((0,0))
+        self.grid[0][50] = Water(50,0,self.cells_w,self.cells_h)
+        self.cell_to_update.add((50,0))
         self.move_cells()
         self.screen.blit(self.canva, (0, 0))
 
