@@ -1,12 +1,15 @@
 import random
 
 
-class sand:
+class Sand:
     def __init__(self,x,y,density = (1,1)):
         self.x = x
         self.y = y
         self.density = density
         self.color = (random.randint(150,200),random.randint(75,140),0)
+
+    def can_move(self,el):
+        return el is None or el.__class__.__name__ == "Water"
 
     def update_position(self,grid,cells_h,cells_w):
 
@@ -15,7 +18,7 @@ class sand:
         #if self.y - 1 >= 0: #A opti
          #   to_add.add((self.x, self.y - 1))
 
-        if self.y + 1 < cells_h and grid[self.y + 1][self.x] is None:
+        if self.y + 1 < cells_h and self.can_move(grid[self.y + 1][self.x]):
 
             # on ajoute les voisins à surveiller
             if self.y - 1 >= 0:
@@ -28,6 +31,7 @@ class sand:
                 to_add.add((self.x - self.density[0], self.y - 1))
 
             to_add.add((self.x, self.y + 1))
+            to_add.add((self.x,self.y))
             self.y += 1
 
             return (True,( self.x,self.y),to_add) #if moved
@@ -36,11 +40,10 @@ class sand:
 
             for i in range(1,self.density[0]+1):
 
-                if self.y + 1 < cells_h and self.x - i >= 0 and grid[self.y + 1][self.x - i] is None:
+                if self.y + 1 < cells_h and self.x - i >= 0 and self.can_move(grid[self.y + 1][self.x - i]):
                     # on ajoute les voisins à surveiller
                     if self.y - 1 >= 0:
                         to_add.add((self.x, self.y - 1))
-
 
                     for j in range(1,self.density[0]+1):
                         if self.x + j < cells_w:
@@ -48,12 +51,13 @@ class sand:
                         
                         to_add.add((self.x - i, self.y + 1))
 
+
                     self.x -= i
                     self.y += 1
                     
                     return (True,(self.x,self.y),to_add) #if moved
 
-                elif self.y + 1 < cells_h and self.x + i < cells_w and grid[self.y + 1][self.x + i] is None:
+                elif self.y + 1 < cells_h and self.x + i < cells_w and self.can_move(grid[self.y + 1][self.x + i]):
                     # on ajoute les voisins à surveiller
                     if self.y - 1 >= 0:
                         to_add.add((self.x, self.y - 1))
@@ -64,6 +68,7 @@ class sand:
                         
                         to_add.add((self.x + j, self.y + 1))
 
+
                     self.x += i
                     self.y += 1
 
@@ -71,23 +76,22 @@ class sand:
         
         return (False,(None,None),None) #if not moved
     
-class wood:
+class Wood:
     def __init__(self,x,y):
         self.x = x
         self.y = y
         self.color = (0,0,0)
 
-class water:
+class Water:
     def __init__(self,x,y,w,h,life=40):
         self.x = x
         self.y = y
-        self.density = (1,1)
         self.move = [False,False] #(left,right)
         self.cur_life = life
         self.base_life = life
         self.cells_w = w
         self.cells_h = h
-        self.color = (0,0,255)
+        self.color = (random.randint(0,20),random.randint(0,20),random.randint(200,255))
 
     def add_neighbors(self, l, x, y):
         if x-1 >= 0 :
@@ -105,7 +109,7 @@ class water:
 
         to_add = set()
 
-        if self.y + 1 < cells_h and grid[self.y + 1][self.x] is None:
+        if self.y + 1 < self.cells_h and grid[self.y + 1][self.x] is None:
 
             # on ajoute les voisins à surveiller
             self.add_neighbors(to_add,self.x,self.y)
@@ -118,29 +122,27 @@ class water:
 
         else:#elif random.random() < 1:  # essaie de moins unifier le sable:
 
-            for i in range(1,self.density[0]+1):
-
-                if self.y + 1 < cells_h and self.x - i >= 0 and grid[self.y + 1][self.x - i] is None:
+                if self.y + 1 < self.cells_h and self.x - 1 >= 0 and grid[self.y + 1][self.x - 1] is None:
                     # on ajoute les voisins à surveiller
                     self.add_neighbors(to_add,self.x,self.y)
 
-                    self.x -= i
+                    self.x -= 1
                     self.y += 1
                     
+                    to_add.add((self.x, self.y))
                     return (True,(self.x,self.y),to_add) #if moved
 
-                elif self.y + 1 < cells_h and self.x + i < cells_w and grid[self.y + 1][self.x + i] is None:
+                elif self.y + 1 < self.cells_h and self.x + 1 < self.cells_w and grid[self.y + 1][self.x + 1] is None:
                     # on ajoute les voisins à surveiller
                     self.add_neighbors(to_add,self.x,self.y)
 
-                    self.x += i
+                    self.x += 1
                     self.y += 1
-
+                    to_add.add((self.x, self.y))
                     return (True,(self.x,self.y),to_add) #if moved
                 
                 # choisir une direction
                 else :
-                    return (False,(None,None),None) 
                     if self.move[0] is False and self.move[1] is False:
                         choice = random.choice([-1,1])
                         if choice == -1:
@@ -151,11 +153,7 @@ class water:
                     if self.move[0] : 
                         if self.x - 1 >= 0 and grid[self.y][self.x - 1] is None:
                             #print("move left")
-                            if self.x + 1 < cells_w:
-                                to_add.add((self.x + 1, self.y))
-                                to_add.add((self.x +1, self.y-1))
-                            to_add.add((self.x -1, self.y-1))
-                            to_add.add((self.x , self.y-1))
+                            self.add_neighbors(to_add,self.x,self.y)
                             self.x -= 1
                             self.cur_life -= 1
                             if self.cur_life <= 0 :
@@ -169,6 +167,8 @@ class water:
                             else :
                                 to_add.add((self.x, self.y))
                                 return (True,(self.x,self.y),to_add) #if moved
+                        elif self.x +1 < self.cells_w and grid[self.y][self.x + 1] is not None :
+                            return (False,(None,None),None) #if not moved
                         else :
                             self.move[0] = False
                             #if self.move[1] is None :
@@ -180,11 +180,7 @@ class water:
                     
                     elif self.move[1] :
                         if self.x + 1 < cells_w and grid[self.y][self.x + 1] is None:
-                            if self.x - 1 >= 0:
-                                to_add.add((self.x - 1, self.y))
-                                to_add.add((self.x -1, self.y-1))
-                            to_add.add((self.x +1, self.y-1))
-                            to_add.add((self.x , self.y-1))
+                            self.add_neighbors(to_add,self.x,self.y)
                             self.x += 1
                             self.cur_life -= 1
                             if self.cur_life <= 0 :
@@ -198,6 +194,8 @@ class water:
                             else :
                                 to_add.add((self.x, self.y))
                                 return (True,(self.x,self.y),to_add) #if moved
+                        elif self.x -1 >= 0 and grid[self.y][self.x - 1] is not None :
+                            return (False,(None,None),None) #if not moved
                         else :
                             self.move[1] = False
                             #if self.move[0] is None :

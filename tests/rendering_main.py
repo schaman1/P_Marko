@@ -19,7 +19,7 @@ screenSize = (screen.get_width(),screen.get_height())
 font = pygame.font.SysFont(None, 48)
 
 bg = pygame.image.load("../game/assets/bg1.png").convert()
-fps = 5
+fps = 60
 fpsClock = pygame.time.Clock()
 
 def run():

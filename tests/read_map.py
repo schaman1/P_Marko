@@ -1,7 +1,7 @@
 import pygame
 import math
 import random
-from particles import sand,wood, water
+from particles import Sand,Wood, Water
 
 class Read_map:
     def __init__(self, filename, screen,size):
@@ -48,15 +48,16 @@ class Read_map:
                 color = self.get_color(cx * self.cell_size, cy * self.cell_size)
                 if color != (255, 255, 255):
                     if color == (255, 255, 0):  # sable
-                        self.grid[cy][cx] = sand(cx,cy)
+                        self.grid[cy][cx] = Sand(cx,cy)
                         self.cell_to_update.add((cx,cy))
                         #color = (random.randint(90,104),random.randint(49,83),0)  # noir indestructible
                     elif color == (0, 0, 255):  # eau
-                        self.grid[cy][cx] = water(cx,cy,self.cells_w,self.cells_h)
+                        #self.grid[cy][cx] = Sand(cx,cy)
+                        self.grid[cy][cx] = Water(cx,cy,self.cells_w,self.cells_h)
                         self.cell_to_update.add((cx,cy))
                         #color = (0,0,255)
                     else :
-                        self.grid[cy][cx] = wood(cx,cy)  # noir indestructible
+                        self.grid[cy][cx] = Wood(cx,cy)  # noir indestructible
 
     def create_map(self):
         """Dessine toute la carte une fois au démarrage"""
@@ -67,6 +68,9 @@ class Read_map:
 
     def draw_map(self):
         """Dessine la map sur l'écran"""
+        #Pour un robinet
+        #self.grid[0][0] = Water(0,0,self.cells_w,self.cells_h)
+        #self.cell_to_update.add((0,0))
         self.move_cells()
         self.screen.blit(self.canva, (0, 0))
 
@@ -108,9 +112,9 @@ class Read_map:
             if 0 <= cx < self.width  and 0 <= cy < self.height :
                 if cx< self.cells_w and cy < self.cells_h:
                     if self.grid[cy][cx] is None:
-                        #color = (random.randint(150,200),random.randint(75,140),0)  #
-                        #color = (random.randint(90,104),random.randint(49,83),0)  # noir indestructible
-                        self.grid[cy][cx] = water(cx,cy,self.cells_w,self.cells_h)
+
+                        #self.grid[cy][cx] = Water(cx,cy,self.cells_w,self.cells_h)
+                        self.grid[cy][cx] = Sand(cx,cy)
                         pygame.draw.rect(self.canva, self.grid[cy][cx].color, self.rect_grid[cy][cx])
                         self.cell_to_update.add((cx,cy))
 
@@ -121,7 +125,7 @@ class Read_map:
             nx = cx + dx
             ny = cy + dy
             if 0 <= nx < self.cells_w and 0 <= ny < self.cells_h:
-                if self.grid[ny][nx] is not None and self.grid[ny][nx] != (0, 0, 0):  # noir indestructible
+                if self.grid[ny][nx] is not None and self.grid[ny][nx].__class__.__name__ != "Wood":  # noir indestructible
                     # suppression dans la grille
                     self.grid[ny][nx] = None
                     # suppression graphique
@@ -139,7 +143,7 @@ class Read_map:
         to_add = set()
 
         for (x, y) in self.cell_to_update:
-            #print(y)
+            
             if self.grid[y][x] is not None and self.grid[y][x].color != (0, 0, 0):  # si la cellule existe et n'est pas noire
                 
                 moved, (newx, newy), new_set = self.grid[y][x].update_position(self.grid,self.cells_h,self.cells_w)
@@ -152,7 +156,8 @@ class Read_map:
                             self.update_cell(x,y,newx,newy)
                         to_add |= new_set                 
                 
-                to_remove.add((x, y))
+
+            to_remove.add((x, y))
 
         # maj des sets en une seule opération (rapide)
         self.cell_to_update -= to_remove
@@ -174,9 +179,13 @@ class Read_map:
         """Fait tomber une cellule"""
         # échange dans la grille
 
-        self.grid[newy][newx], self.grid[y][x] = self.grid[y][x], None
+        self.grid[newy][newx], self.grid[y][x] = self.grid[y][x], self.grid[newy][newx]
 
         # effacer ancienne position
-        self.canva.fill((255, 255, 255, 0), self.rect_grid[y][x])
+        if self.grid[y][x] is None :
+            self.canva.fill((255, 255, 255, 0), self.rect_grid[y][x])
+        else :
+            pygame.draw.rect(self.canva, self.grid[y][x].color, self.rect_grid[y][x])
+            self.grid[y][x].x , self.grid[y][x].y = x,y
         # dessiner à la nouvelle position
         pygame.draw.rect(self.canva, self.grid[newy][newx].color, self.rect_grid[newy][newx])
