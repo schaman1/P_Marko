@@ -1,5 +1,5 @@
 import pygame
-from particles import Sand,Wood, Water
+from serv.in_game.particles import Sand,Wood, Water
 
 class Read_map:
     def __init__(self, filename, size,canva_size):

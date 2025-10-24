@@ -1,4 +1,4 @@
-import socket, json, threading
+import socket, json, threading, base64, pygame
 import time
 from client.events import event_queue
 
@@ -100,7 +100,8 @@ class Client:
                     while "\n" in buffer:
                         line, buffer = buffer.split("\n", 1)
                         data_json = json.loads(line)
-                        print(f"Data reçue : {data_json}")
+                        #print(f"Data reçue : {data_json}")
+                        #print("2")
                         self.traiter_data(data_json)
 
                 except socket.timeout:
@@ -129,12 +130,23 @@ class Client:
             self.connected = False
             self.lClient_id.clear()
             event_queue.put({"type": "SERVER_DISCONNECTED"})
+    
+    def base64_to_surface(self, b64data):
+        data = base64.b64decode(b64data)
+        # self.Size = (800, 600)
+        return pygame.image.fromstring(data, (800,600), "RGB")
 
 
     def traiter_data(self,data):
                 
         # Réception de la réponse
-        if data["id"] == "new player" :
+        id = data["id"]
+
+        if id == "canva to draw" :
+            self.game.state.canva = self.base64_to_surface(data["canva"])
+            #print("ok")
+
+        elif id == "new player" :
             print(f"New connection : {data["new connection"]}")
             text = data["new connection"]
 
@@ -143,11 +155,11 @@ class Client:
                 text = f"{text} (vous)"
             self.lClient_id.append(text)
 
-        elif data["id"] == "remove player":
+        elif id == "remove player":
             print(f"Remove connection : {data['remove connection']}")
             self.lClient_id.remove(data["remove connection"])
 
-        elif data["id"] == "start game":
+        elif id == "start game":
             self.game.mod = "game"
 
     def display_clients_name(self):

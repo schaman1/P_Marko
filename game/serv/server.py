@@ -1,4 +1,5 @@
-import socket, threading, os, json
+import socket, threading, json
+from serv.server_game import Server_game
 
 class Server:
     def __init__(self, host='0.0.0.0', port=5000):
@@ -103,8 +104,9 @@ class Server:
             self.is_running_menu = False
             self.is_running_game = True
             #self.current_thread.join()
-            self.current_thread = threading.Thread(target=self.loop_server_game, daemon=True).start()
             self.send_data_all({"id":"start game"})
+            self.server_game = Server_game()
+            self.current_thread = threading.Thread(target=self.loop_server_game, daemon=True).start()
 
     def in_game(self,data,sender):
         pass
@@ -156,7 +158,9 @@ class Server:
 
     def loop_server_game(self):
         while self.is_running_game :
-            pass
+            result = self.server_game.give_canva()
+            if result[0]:
+                self.send_data_all({"id":"canva to draw","canva":result[1]})
 
     def loop_server_menu(self):
         self.server.settimeout(1)
