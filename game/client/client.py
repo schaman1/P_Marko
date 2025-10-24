@@ -4,11 +4,12 @@ from client.events import event_queue
 
 class Client:
 
-    def __init__(self, font,screen,ip="localhost", port=5000):
+    def __init__(self, font,screen,game,ip="localhost", port=5000):
         self.ip = socket.gethostbyname(socket.gethostname())
         self.port = port
         self.client = None
         self.connected = None
+        self.game = game
 
         self.pseudo = "Coming soon"
         self.err_message = ""
@@ -45,7 +46,6 @@ class Client:
                 time.sleep(0.2)
 
         self.return_err("Ip ou port incorrect")
-
 
     def return_err(self,mess):
         print(mess)
@@ -147,9 +147,15 @@ class Client:
             print(f"Remove connection : {data['remove connection']}")
             self.lClient_id.remove(data["remove connection"])
 
+        elif data["id"] == "start game":
+            self.game.mod = "game"
+
     def display_clients_name(self):
         for idx,client in enumerate(self.lClient_id):
             self.draw_text(self.screen,self.font,client,idx)
+
+    def send_data(self,data):
+        self.client.send(json.dumps(data).encode())
 
     def draw_text(self,screen,font,text,idx):
             text = font.render(text, True, (255, 255, 255))

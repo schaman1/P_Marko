@@ -206,3 +206,80 @@ class Water:
                          #   return (False,(None,None),None) #if not moved
     
         return (False,(None,None),None) #if not moved
+    
+
+class Fire:
+    def __init__(self,x,y,life = 20):
+        self.x = x
+        self.y = y
+        self.life = life
+        #self.density = density
+        self.color = (random.randint(200,255),random.randint(0,55),0)
+
+    def can_move(self,el):
+        return el is None or el.__class__.__name__ == "Wood"
+
+    def update_position(self,grid,cells_h,cells_w):
+
+        to_add = set()
+
+        #if self.y - 1 >= 0: #A opti
+         #   to_add.add((self.x, self.y - 1))
+
+        if self.y + 1 < cells_h and self.can_move(grid[self.y + 1][self.x]):
+
+            # on ajoute les voisins à surveiller
+            if self.y - 1 >= 0:
+                to_add.add((self.x, self.y - 1))
+
+            if self.x + self.density[0] < cells_w:
+                to_add.add((self.x + self.density[0], self.y - 1))
+
+            if self.x - self.density[0] >= 0:
+                to_add.add((self.x - self.density[0], self.y - 1))
+
+            to_add.add((self.x, self.y + 1))
+            to_add.add((self.x,self.y))
+            self.y += 1
+
+            return (True,( None,None),to_add) #if moved
+
+        else:#elif random.random() < 1:  # essaie de moins unifier le sable:
+
+            for i in range(1,self.density[0]+1):
+
+                if self.y + 1 < cells_h and self.x - i >= 0 and self.can_move(grid[self.y + 1][self.x - i]):
+                    # on ajoute les voisins à surveiller
+                    if self.y - 1 >= 0:
+                        to_add.add((self.x, self.y - 1))
+
+                    for j in range(1,self.density[0]+1):
+                        if self.x + j < cells_w:
+                            to_add.add((self.x + j, self.y - 1))
+                        
+                        to_add.add((self.x - i, self.y + 1))
+
+
+                    self.x -= i
+                    self.y += 1
+                    
+                    return (True,(self.x,self.y),to_add) #if moved
+
+                elif self.y + 1 < cells_h and self.x + i < cells_w and self.can_move(grid[self.y + 1][self.x + i]):
+                    # on ajoute les voisins à surveiller
+                    if self.y - 1 >= 0:
+                        to_add.add((self.x, self.y - 1))
+
+                    for j in range(1,self.density[0]+1):
+                        if self.x - j >= 0:
+                            to_add.add((self.x - j, self.y - 1))
+                        
+                        to_add.add((self.x + j, self.y + 1))
+
+
+                    self.x += i
+                    self.y += 1
+
+                    return (True,(self.x,self.y),to_add) #if moved
+        
+        return (False,(None,None),None) #if not moved

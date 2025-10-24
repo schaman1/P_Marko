@@ -6,7 +6,9 @@ class Server:
         self.host = host
         self.port = port
         self.server = None
-        self.is_running = False
+        self.is_running_menu = False
+        self.is_running_game = True
+        self.current_thread = None
         self.nbr_player = 0
 
     def handle_client(self, client_socket):
@@ -23,7 +25,10 @@ class Server:
                     data = json.loads(data_recu.decode())
                     addr = self.safe_peername(client_socket)
                     print(f"Reçu de {addr} : {data}")
-                    self.in_menu(data, client_socket)
+                    if self.is_running_menu :
+                        self.in_menu(data, client_socket)
+                    else :
+                        self.in_game(data,client_socket)
 
                 except json.JSONDecodeError:
                     print("Erreur JSON — données corrompues ou incomplètes.")
@@ -92,6 +97,22 @@ class Server:
                     "remove connection": removed_id
                 }), client)
 
+        elif data["id"] == "start game":
+            #Redirige vers le game, stop le loop_server_in_menu pour start celui de in_game
+            print("start !")
+            self.is_running_menu = False
+            self.is_running_game = True
+            #self.current_thread.join()
+            self.current_thread = threading.Thread(target=self.loop_server_game, daemon=True).start()
+            self.send_data_all({"id":"start game"})
+
+    def in_game(self,data,sender):
+        pass
+
+    def send_data_all(self,data):
+        for socket,client in self.lClient.items():
+            self.send_data(json.dumps(data),socket)
+
     def send_data(self, data, client):
         """Envoie des données à un client spécifique."""
         data += "\n"
@@ -115,7 +136,7 @@ class Server:
         self.lClient.clear()
         self.nbr_player = 0
 
-        self.is_running = False
+        self.is_running_menu = False
         if self.server:
             self.server.close()
             self.server = None
@@ -129,14 +150,17 @@ class Server:
         print(f"Serveur lancé — host : {host}, port : {port}")
 
         self.server.listen()
-        self.is_running = True
-
-        threading.Thread(target=self.loop_server, daemon=True).start()
+        self.is_running_menu = True
+        self.current_thread = threading.Thread(target=self.loop_server_menu, daemon=True).start()
         client.connexion_serveur(f"{host}:{port}")
 
-    def loop_server(self):
+    def loop_server_game(self):
+        while self.is_running_game :
+            pass
+
+    def loop_server_menu(self):
         self.server.settimeout(1)
-        while self.is_running:
+        while self.is_running_menu:
             try:
                 client_socket, addr = self.server.accept()
             except socket.timeout:

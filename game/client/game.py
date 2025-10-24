@@ -26,7 +26,7 @@ class Game:
         self.objClicked = None
 
         self.mod = "menu" #menu/reglage/game
-        self.client = Client(self.font,self.screen)
+        self.client = Client(self.font,self.screen,self)
         self.state = State(self.screen,self.screenSize,self.font,self.client)
 
 
@@ -120,7 +120,11 @@ class Game:
                     
                     elif self.mod == "host":
 
-                        if self.state.menu.rect.collidepoint(event.pos):
+                        if self.state.start.rect.collidepoint(event.pos):
+                            self.client.send_data({"id":"start game"})
+
+
+                        elif self.state.menu.rect.collidepoint(event.pos):
                             if self.Server is not None:
                                 self.Server.stop_server()
                                 self.Server = None
