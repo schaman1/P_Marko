@@ -3,17 +3,18 @@ from client.rendering.texture import color
 from client.C_button import Button
 from client.alert import Alert
 from client.C_load import Load
-
+from client.C_game import Game
 
 class State:
 
-    def __init__(self,screen,screenSize,font,client):
+    def __init__(self,screen,screenSize,font,client,cell_size):
         self.screen = screen
         self.Size = screenSize
         self.font = font
         self.client = client
         self.load = Load(screen)
-        self.canva = None
+
+        self.game = Game(cell_size,self.Size)
 
         self.join = Button(pygame.Rect(self.Size[0]/3, 2*self.Size[1]/18, self.Size[0]/3, self.Size[1]/6),color["GREEN"],"Rejoindre une partie",self.font,"join")
         self.host = Button(pygame.Rect(self.Size[0]/3, 7*self.Size[1]/18, self.Size[0]/3, self.Size[1]/6),color["GREY"],"Creer une partie",self.font,"host")
@@ -59,12 +60,8 @@ class State:
 
         elif state == "game":
 
-            #inGame_PostFase to do (choose skin, map, etc)
-            if self.canva is None :
-                self.screen.fill(color["BLACK"])
-                self.draw_load()
-            else :
-                self.screen.blit(self.canva, (0, 0))
+            self.screen.blit(self.game.bg,(0,0))
+            self.screen.blit(self.game.canva, (0, 0))
             #.drawAll()
 
         elif state == "wait_serv":

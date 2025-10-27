@@ -1,15 +1,15 @@
-import socket, json, threading, base64, pygame
+import socket, json, threading, pygame
 import time
 from client.events import event_queue
 
 class Client:
 
-    def __init__(self, font,screen,game,ip="localhost", port=5000):
+    def __init__(self, font,screen,main,ip="localhost", port=5000):
         self.ip = socket.gethostbyname(socket.gethostname())
         self.port = port
         self.client = None
         self.connected = None
-        self.game = game
+        self.main = main
 
         self.pseudo = "Coming soon"
         self.err_message = ""
@@ -96,7 +96,7 @@ class Client:
 
                     buffer += data.decode()
 
-                    # 🪄 traiter tous les messages reçus séparés par "\n"
+                    # traiter tous les messages reçus séparés par "\n"
                     while "\n" in buffer:
                         line, buffer = buffer.split("\n", 1)
                         data_json = json.loads(line)
@@ -130,20 +130,17 @@ class Client:
             self.connected = False
             self.lClient_id.clear()
             event_queue.put({"type": "SERVER_DISCONNECTED"})
-    
-    def base64_to_surface(self, b64data):
-        data = base64.b64decode(b64data)
-        # self.Size = (800, 600)
-        return pygame.image.fromstring(data, (800,600), "RGB")
 
+    def update_canva(self,l):
+        self.main.state.game.update_canva(l)
 
     def traiter_data(self,data):
                 
         # Réception de la réponse
         id = data["id"]
 
-        if id == "canva to draw" :
-            self.game.state.canva = self.base64_to_surface(data["canva"])
+        if id == "to change" :
+            self.update_canva(data["updates"])
             #print("ok")
 
         elif id == "new player" :
@@ -160,7 +157,7 @@ class Client:
             self.lClient_id.remove(data["remove connection"])
 
         elif id == "start game":
-            self.game.mod = "game"
+            self.main.mod = "game"
 
     def display_clients_name(self):
         for idx,client in enumerate(self.lClient_id):

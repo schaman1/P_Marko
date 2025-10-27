@@ -63,14 +63,14 @@ class Read_map:
                 if self.grid[cy][cx] is not None:
                     pygame.draw.rect(self.canva, self.grid[cy][cx].color, self.rect_grid[cy][cx])
 
+
     def return_map(self):
         """Dessine la map sur l'écran"""
         #Pour un robinet
         #self.grid[0][50] = Water(50,0,self.cells_w,self.cells_h)
         #self.cell_to_update.add((50,0))
-        self.move_cells()
-
-        return self.canva
+        
+        return self.move_cells()
 
     def get_circle_pattern(self, r_cells):
         """Retourne une liste d'offsets pour un rayon donné, pré-calculée"""
@@ -139,6 +139,7 @@ class Read_map:
 
         to_remove = set()
         to_add = set()
+        to_update = []
 
         for (x, y) in self.cell_to_update:
             
@@ -148,10 +149,16 @@ class Read_map:
 
                 if moved is None:
                     self.destroy_cell(x,y)
+                    to_update.append((x,y,(255,255,255,0)))
 
                 elif moved is True: 
                         if newx is not None:
+                            if self.grid[newy][newx] is None :
+                                to_update.append((x,y,(255,255,255,0)))
+                            else :
+                                to_update.append((newx,newy,self.grid[y][x].color))
                             self.update_cell(x,y,newx,newy)
+
                         to_add |= new_set                 
                 
 
@@ -160,6 +167,7 @@ class Read_map:
         # maj des sets en une seule opération (rapide)
         self.cell_to_update -= to_remove
         self.cell_to_update |= to_add
+        return to_update
 
     def add_to_list(self, x, y,l):
         """Ajoute une cellule à la liste des cellules à mettre à jour"""

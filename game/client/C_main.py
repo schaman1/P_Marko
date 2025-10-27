@@ -7,8 +7,8 @@ from client.events import event_queue
 #from C_inGame import InGame
 #from C_card import Card
 
-class Game:
-    def __init__(self):
+class Main:
+    def __init__(self,size):
         # Set up the display (width, height)
         self.screen = pygame.display.set_mode((pygame.display.Info().current_w, pygame.display.Info().current_h),pygame.FULLSCREEN | pygame.SCALED)
         self.screenSize = (self.screen.get_width(),self.screen.get_height())
@@ -26,8 +26,9 @@ class Game:
         self.objClicked = None
 
         self.mod = "menu" #menu/reglage/game
+
         self.client = Client(self.font,self.screen,self)
-        self.state = State(self.screen,self.screenSize,self.font,self.client)
+        self.state = State(self.screen,self.screenSize,self.font,self.client,size)
 
 
     def run(self):
@@ -66,7 +67,6 @@ class Game:
                     if self.mod == "menu":
                         if self.state.host.rect.collidepoint(event.pos):
                             #("Play button clicked")
-                            #self.Game.createHand()#initialise the hand of the player
 
                             self.state.show_ip.update_text("show_ip",f"ip:port = {self.client.ip}:{5000}")
                             self.state.start.update_text("start","Lancement du serveur...")

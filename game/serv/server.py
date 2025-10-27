@@ -106,6 +106,9 @@ class Server:
             #self.current_thread.join()
             self.send_data_all({"id":"start game"})
             self.server_game = Server_game()
+            result = self.server_game.init_canva()
+            if result != [] :
+                self.send_data_all({"id":"to change","updates":result})
             self.current_thread = threading.Thread(target=self.loop_server_game, daemon=True).start()
 
     def in_game(self,data,sender):
@@ -158,9 +161,9 @@ class Server:
 
     def loop_server_game(self):
         while self.is_running_game :
-            result = self.server_game.give_canva()
-            if result[0]:
-                self.send_data_all({"id":"canva to draw","canva":result[1]})
+            result = self.server_game.return_chg()
+            if result != [] :
+                self.send_data_all({"id":"to change","updates":result})
 
     def loop_server_menu(self):
         self.server.settimeout(1)
