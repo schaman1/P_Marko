@@ -1,9 +1,10 @@
 import pygame
+import var
 
 class Game :
     def __init__(self, size,canva_size):
-        self.cell_size = size
         self.canva_size = canva_size
+        self.cell_size = (var.cell_size * self.canva_size[0])//var.serv_size[0]
         self.canva = pygame.Surface(canva_size)
         #self.canva_map = self.map.canva
         self.bg = pygame.image.load("assets/bg1.png").convert()
