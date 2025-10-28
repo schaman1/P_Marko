@@ -4,7 +4,7 @@ import var
 class Server_game :
     def __init__(self):
         self.canva_size = var.serv_size
-        self.map = Read_map("assets/bgWater.png",4,self.canva_size)
+        self.map = Read_map("assets/bgWater.png",var.cell_size,self.canva_size)
         self.canva_map = self.map.canva
 
     def return_chg(self):

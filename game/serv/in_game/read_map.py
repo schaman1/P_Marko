@@ -156,7 +156,9 @@ class Read_map:
                             if self.grid[newy][newx] is None :
                                 to_update.append((x,y,(255,255,255,0)))
                             else :
-                                to_update.append((newx,newy,self.grid[y][x].color))
+                                to_update.append((x,y,self.grid[newy][newx].color))
+                            #else 
+                            to_update.append((newx,newy,self.grid[y][x].color))
                             self.update_cell(x,y,newx,newy)
 
                         to_add |= new_set                 
