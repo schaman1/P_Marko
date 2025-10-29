@@ -173,7 +173,7 @@ class Water:
             self.cur_life = self.base_life
             to_add.add((self.x, self.y))
 
-            return (True,(self.x,self.y),to_add) #if moved
+            return (True,( self.x,self.y),to_add) #if moved
 
         else:#elif random.random() < 1:  # essaie de moins unifier le sable:
 
