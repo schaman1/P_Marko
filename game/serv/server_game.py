@@ -22,9 +22,9 @@ class Server_game :
                 #print("OK")
                 self.serv.send_data_all({"id":"to change","updates":result})
             
-            #fps = self.fpsClock.get_fps()
-            #if fps < 60 : #Affiche le fps quand c'est critique
-            #    print(fps)
+            fps = self.fpsClock.get_fps()
+            if fps < 60 : #Affiche le fps quand c'est critique
+                print(fps)
 
     def return_chg(self):
         return self.map.return_map()

@@ -113,21 +113,24 @@ class Fire:
                         new_life.append(grid[self.y+i][self.x+j].life)
 
                     elif name == "Water" :
-                        new_temp -=5
+                        new_temp -=40
+
+                    elif name == "Sand" :
+                        new_temp -=20
 
         new_temp += min(sum(heapq.nlargest(7, new_life))//7-6,255)
         self.life = new_temp
         self.color = (self.color[0],self.color[1],self.color[2],self.life)
         
         if self.life <= 20 :
-            to_add.add((self.x,self.y+1))
+            if 0 <= self.y -1:
+                to_add.add((self.x,self.y-1))
             return (None,(None,None),to_add)
         
         choice = random.choice([-1,0,0,1])
-        if r > 0.8 and grid[self.y-1][self.x+choice] is None :
+        if r > 0.8 and 0 <= self.x+choice and self.x + choice < cells_w and grid[self.y-1][self.x+choice] is None :
             to_add.add((self.x,self.y))
             to_add.add((self.x+choice,self.y-1))
-
             grid[self.y-1][self.x+choice] = Fire(self.x+choice,self.y-1,255)
 
             #self.y -=1
@@ -163,6 +166,11 @@ class Water:
     def update_position(self,grid,cells_h,cells_w):
 
         to_add = set()
+        #for i in range(100): #Test performance
+            #self.add_neighbors(to_add,self.x,self.y)
+            #if grid[self.y + 1][self.x] is None:
+                #
+            #r = random.random()
 
         if self.y + 1 < self.cells_h and grid[self.y + 1][self.x] is None:
 
