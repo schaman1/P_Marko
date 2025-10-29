@@ -1,4 +1,4 @@
-import pygame
+import pygame, numpy as np
 from serv.in_game.particles import Sand,Wood, Water, Fire
 
 class Read_map:
@@ -13,9 +13,11 @@ class Read_map:
 
         self.map = pygame.image.load(filename).convert()
         self.map = pygame.transform.scale(self.map, (self.width, self.height))
-        self.canva = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+        #self.canva = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
 
         # grille binaire + couleurs
+        #self.grid = np.zeros((self.cells_h, self.cells_w), dtype=np.uint8)
+        #self.objects = {}
         self.grid = [[None for _ in range(self.cells_w)] for _ in range(self.cells_h)]
         
         # sets plutôt que listes = O(1) lookup, remove, add
@@ -23,15 +25,8 @@ class Read_map:
         self.circle_patterns = {}
         self.border_patterns = {}
 
-        # pré-calcul des rects pour chaque cellule
-        self.rect_grid = [
-            [pygame.Rect(x * self.cell_size, y * self.cell_size, self.cell_size, self.cell_size)
-             for x in range(self.cells_w)]
-            for y in range(self.cells_h)
-        ]
-
         self.read_map()
-        self.create_map()
+        #self.create_map()
 
     def get_color(self, x, y):
         if 0 <= x < self.width and 0 <= y < self.height:
@@ -59,14 +54,6 @@ class Read_map:
                     else :
                         self.grid[cy][cx] = Wood(cx,cy)  # noir indestructible
 
-    def create_map(self):
-        """Dessine toute la carte une fois au démarrage"""
-        for cy in range(self.cells_h):
-            for cx in range(self.cells_w):
-                if self.grid[cy][cx] is not None:
-                    pygame.draw.rect(self.canva, self.grid[cy][cx].color, self.rect_grid[cy][cx])
-
-
     def return_map(self):
         """Dessine la map sur l'écran"""
         #Pour un robinet
@@ -89,12 +76,6 @@ class Read_map:
             self.circle_patterns[r_cells] = pattern
             self.border_patterns[r_cells] = pattern_border
         return self.circle_patterns[r_cells]
-    
-
-    def draw_rect(self, cx, cy):
-        """Dessine un rectangle centré en (x, y)"""
-        if 0 <= cx < self.cells_w and 0 <= cy < self.cells_h:
-            pygame.draw.rect(self.canva, (255,0,0), self.rect_grid[cy][cx])
 
     def what_to_do(self,x,y,size = 10):
         cx = x // self.cell_size
@@ -116,7 +97,6 @@ class Read_map:
 
                         #self.grid[cy][cx] = Water(cx,cy,self.cells_w,self.cells_h)
                         self.grid[cy][cx] = Sand(cx,cy)
-                        pygame.draw.rect(self.canva, self.grid[cy][cx].color, self.rect_grid[cy][cx])
                         self.cell_to_update.add((cx,cy))
 
     def destroy_rect(self, cx, cy, r_cells):
@@ -130,7 +110,7 @@ class Read_map:
                     # suppression dans la grille
                     self.grid[ny][nx] = None
                     # suppression graphique
-                    self.canva.fill((255, 255, 255, 0), self.rect_grid[ny][nx])
+                    #self.canva.fill((255, 255, 255, 0), self.rect_grid[ny][nx])
 
         for dx,dy in self.border_patterns[r_cells]:
             if 0 <= cx+dx < self.cells_w and 0 <= cy+dy < self.cells_h:
@@ -188,7 +168,7 @@ class Read_map:
         # suppression dans la grille
         self.grid[y][x] = None
         # suppression graphique
-        self.canva.fill((255, 255, 255, 0), self.rect_grid[y][x])
+        #self.canva.fill((255, 255, 255, 0), self.rect_grid[y][x])
 
     def update_cell(self, x, y,newx,newy):
         """Fait tomber une cellule"""
@@ -197,10 +177,10 @@ class Read_map:
         self.grid[newy][newx], self.grid[y][x] = self.grid[y][x], self.grid[newy][newx]
 
         # effacer ancienne position
-        if self.grid[y][x] is None :
-            self.canva.fill((255, 255, 255, 0), self.rect_grid[y][x])
-        else :
-            self.canva.fill(self.grid[y][x].color, self.rect_grid[y][x])
+        #if self.grid[y][x] is None :
+        #    self.canva.fill((255, 255, 255, 0), self.rect_grid[y][x])
+        #else :
+        #    self.canva.fill(self.grid[y][x].color, self.rect_grid[y][x])
             #self.grid[y][x].x , self.grid[y][x].y = x,y
         # dessiner à la nouvelle position
-        self.canva.fill(self.grid[newy][newx].color, self.rect_grid[newy][newx])
+        #self.canva.fill(self.grid[newy][newx].color, self.rect_grid[newy][newx])
