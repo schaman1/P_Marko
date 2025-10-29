@@ -11,6 +11,7 @@ class Server:
         self.is_running_game = True
         self.current_thread = None
         self.nbr_player = 0
+        self.server_game = Server_game(self)
 
     def handle_client(self, client_socket):
         """Gère la réception des messages d'un client connecté."""
@@ -105,11 +106,10 @@ class Server:
             self.is_running_game = True
             #self.current_thread.join()
             self.send_data_all({"id":"start game"})
-            self.server_game = Server_game()
             result = self.server_game.init_canva()
             if result != [] :
                 self.send_data_all({"id":"to change","updates":result})
-            self.current_thread = threading.Thread(target=self.loop_server_game, daemon=True).start()
+            self.current_thread = threading.Thread(target=self.server_game.loop_server_game, daemon=True).start()
 
     def in_game(self,data,sender):
         pass
@@ -158,12 +158,6 @@ class Server:
         self.is_running_menu = True
         self.current_thread = threading.Thread(target=self.loop_server_menu, daemon=True).start()
         client.connexion_serveur(f"{host}:{port}")
-
-    def loop_server_game(self):
-        while self.is_running_game :
-            result = self.server_game.return_chg()
-            if result != [] :
-                self.send_data_all({"id":"to change","updates":result})
 
     def loop_server_menu(self):
         self.server.settimeout(1)

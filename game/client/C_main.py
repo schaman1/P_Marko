@@ -3,6 +3,7 @@ from client.state import State
 from client.client import Client
 from serv.server import Server
 from client.events import event_queue
+import var
 
 #from C_inGame import InGame
 #from C_card import Card
@@ -17,7 +18,7 @@ class Main:
         self.font = pygame.font.SysFont(None, 48)
 
         #Set up the clock for managing the frame rate
-        self.fps = 60
+        self.fps = var.fps
         self.fpsClock = pygame.time.Clock()
         self.dt = 0 # Delta time between frames = devra faire *dt pour les mouvements
 

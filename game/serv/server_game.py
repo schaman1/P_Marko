@@ -1,11 +1,26 @@
 from serv.in_game.read_map import Read_map
-import var
+import var #Fichier
+import pygame
 
 class Server_game :
-    def __init__(self):
+    def __init__(self,serv_main):
         self.canva_size = var.serv_size
+        self.serv = serv_main
         self.map = Read_map("assets/bgWater.png",var.cell_size,self.canva_size)
         self.canva_map = self.map.canva
+        self.is_running_game = True
+
+        self.fps = var.fps
+        self.fpsClock = pygame.time.Clock()
+        self.dt = 0 # Delta time between frames = devra faire *dt pour les mouvements
+
+    def loop_server_game(self):
+        while self.is_running_game :
+            dt = self.fpsClock.tick(self.fps)/1000
+            result = self.return_chg()
+            if result != []:
+                #print("OK")
+                self.serv.send_data_all({"id":"to change","updates":result})
 
     def return_chg(self):
         return self.map.return_map()

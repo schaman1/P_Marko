@@ -1,4 +1,4 @@
-import random
+import random, heapq
 
 
 class Sand:
@@ -88,35 +88,47 @@ class Fire:
         self.x = x
         self.y = y
         self.life = life
+        self.diff = 0
         self.color = (random.randint(180,255),random.randint(0,20),0,self.life)
 
     def update_position(self,grid,cells_h,cells_w):
 
         to_add = set()
+        r = random.random()
+        new_life=[]
+        new_temp = 0
+        #self.life -= random.randint(2,10)
 
-        if random.random()<0.5:
-            for i in range(-1,2):
-                for j in range(-1,2):
-                    if 0<= self.y+i < cells_h and 0<= self.x+j < cells_w :
-                        if grid[self.y+i][self.x+j].__class__.__name__ == "Wood" and random.random()<0.2:
+        for i in range(-1,2):
+            for j in range(-1,2):
+                if 0<= self.y+i < cells_h and 0<= self.x+j < cells_w :
+                    name = grid[self.y+i][self.x+j].__class__.__name__
+                    if name == "Wood" :
+                        if random.random()<0.01:
                             grid[self.y+i][self.x+j] = Fire(self.x+j,self.y+i,255)
                             to_add.add((self.x+j,self.y+i))
+                        new_life.append(2000)
 
-        if random.random()<0.20 :
+                    elif name == "Fire" :
+                        new_life.append(grid[self.y+i][self.x+j].life)
+
+                    elif name == "Water" :
+                        new_temp -=5
+
+        new_temp += min(sum(heapq.nlargest(7, new_life))//7-6,255)
+        self.life = new_temp
+        self.color = (self.color[0],self.color[1],self.color[2],self.life)
+        
+        if self.life <= 20 :
             to_add.add((self.x,self.y+1))
             return (None,(None,None),to_add)
         
-        if self.life < 0 :
-            to_add.add((self.x,self.y+1))
-            return (None,(None,None),to_add)
-        
-        choice = random.choice([-1,0,1])
-
-        if grid[self.y-1][self.x+choice] is None :
+        choice = random.choice([-1,0,0,1])
+        if r > 0.8 and grid[self.y-1][self.x+choice] is None :
             to_add.add((self.x,self.y))
             to_add.add((self.x+choice,self.y-1))
 
-            grid[self.y-1][self.x+choice] = Fire(self.x+choice,self.y-1,self.life-30)
+            grid[self.y-1][self.x+choice] = Fire(self.x+choice,self.y-1,255)
 
             #self.y -=1
 
