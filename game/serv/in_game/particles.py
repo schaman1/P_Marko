@@ -97,11 +97,12 @@ class Fire:
         if random.random()<0.5:
             for i in range(-1,2):
                 for j in range(-1,2):
-                    if grid[self.y+i][self.x+j].__class__.__name__ == "Wood" and random.random()<0.8:
-                        grid[self.y+i][self.x+j] = Fire(self.x+j,self.y+i,255)
-                        to_add.add((self.x+j,self.y+i))
+                    if 0<= self.y+i < cells_h and 0<= self.x+j < cells_w :
+                        if grid[self.y+i][self.x+j].__class__.__name__ == "Wood" and random.random()<0.2:
+                            grid[self.y+i][self.x+j] = Fire(self.x+j,self.y+i,255)
+                            to_add.add((self.x+j,self.y+i))
 
-        if random.random()<0.30 :
+        if random.random()<0.20 :
             to_add.add((self.x,self.y+1))
             return (None,(None,None),to_add)
         
@@ -115,7 +116,7 @@ class Fire:
             to_add.add((self.x,self.y))
             to_add.add((self.x+choice,self.y-1))
 
-            grid[self.y-1][self.x+choice] = Fire(self.x+choice,self.y-1,self.life-20)
+            grid[self.y-1][self.x+choice] = Fire(self.x+choice,self.y-1,self.life-30)
 
             #self.y -=1
 
