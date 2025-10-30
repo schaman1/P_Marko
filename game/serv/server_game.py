@@ -17,14 +17,15 @@ class Server_game :
     def loop_server_game(self):
         while self.is_running_game :
             dt = self.fpsClock.tick(self.fps)/1000
+
             result = self.return_chg()
             if result != []:
                 #print("OK")
                 self.serv.send_data_all({"id":"to change","updates":result})
             
             fps = self.fpsClock.get_fps()
-            if fps < 60 : #Affiche le fps quand c'est critique
-                print(fps)
+            #if fps < 60 : #Affiche le fps quand c'est critique
+            print(fps)
 
     def return_chg(self):
         return self.map.return_map()

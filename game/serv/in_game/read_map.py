@@ -48,18 +48,18 @@ class Read_map:
                         self.grid[cy][cx] = Water(cx,cy,self.cells_w,self.cells_h)
                         self.cell_to_update.add((cx,cy))
                         #color = (0,0,255)
-                    #elif color == (255,0,0):
-                    #    self.grid[cy][cx] = Fire(cx,cy)
-                    #    self.cell_to_update.add((cx,cy))
+                    elif color == (255,0,0):
+                        self.grid[cy][cx] = Fire(cx,cy)
+                        self.cell_to_update.add((cx,cy))
                     else :
                         self.grid[cy][cx] = Wood(cx,cy)  # noir indestructible
 
     def return_map(self):
         """Dessine la map sur l'écran"""
         #Pour un robinet
-        for i in range(1,10):
-            self.grid[0][5*i] = Water(5*i,0,self.cells_w,self.cells_h)
-            self.cell_to_update.add((5*i,0))
+        #for i in range(1,10):
+        #    self.grid[0][5*i] = Fire(5*i,0)
+        #    self.cell_to_update.add((5*i,0))
         
         return self.move_cells()
 

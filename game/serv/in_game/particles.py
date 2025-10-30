@@ -2,6 +2,9 @@ import random, heapq
 
 
 class Sand:
+
+    __slots__ = ('x', 'y', 'density', 'color')
+
     def __init__(self,x,y,density = (1,1)):
         self.x = x
         self.y = y
@@ -84,11 +87,13 @@ class Wood:
         self.color = (88-r,41-r,random.randint(0, 20))
 
 class Fire:
+
+    __slots__ = ('x', 'y', 'life', 'color')  # empêche la création d'un dict par instance, 2x plus rapide
+
     def __init__(self,x,y,life = 255):
         self.x = x
         self.y = y
         self.life = life
-        self.diff = 0
         self.color = (random.randint(180,255),random.randint(0,20),0,self.life)
 
     def update_position(self,grid,cells_h,cells_w):
@@ -99,26 +104,25 @@ class Fire:
         new_temp = 0
         #self.life -= random.randint(2,10)
 
-        for i in range(-1,2):
-            for j in range(-1,2):
-                if 0<= self.y+i < cells_h and 0<= self.x+j < cells_w :
-                    name = grid[self.y+i][self.x+j].__class__.__name__
-                    if name == "Wood" :
-                        if random.random()<0.01:
-                            grid[self.y+i][self.x+j] = Fire(self.x+j,self.y+i,255)
-                            to_add.add((self.x+j,self.y+i))
-                        new_life.append(2000)
+        for i, j in [(-1,0),(1,0),(0,-1),(0,1)]:
+            if 0<= self.y+i < cells_h and 0<= self.x+j < cells_w :
+                name = grid[self.y+i][self.x+j].__class__.__name__
+                if name == "Wood" :
+                    if random.random()<0.03:
+                        grid[self.y+i][self.x+j] = Fire(self.x+j,self.y+i,255)
+                        to_add.add((self.x+j,self.y+i))
+                    new_life.append(2000)
 
-                    elif name == "Fire" :
-                        new_life.append(grid[self.y+i][self.x+j].life)
+                elif name == "Fire" :
+                    new_life.append(grid[self.y+i][self.x+j].life)
 
-                    elif name == "Water" :
-                        new_temp -=40
+                elif name == "Water" :
+                    new_temp -=200
 
-                    elif name == "Sand" :
-                        new_temp -=20
+                elif name == "Sand" :
+                    new_temp -=100
 
-        new_temp += min(sum(heapq.nlargest(7, new_life))//7-6,255)
+        new_temp += min(sum(heapq.nlargest(4, new_life))//4-6,255)
         self.life = new_temp
         self.color = (self.color[0],self.color[1],self.color[2],self.life)
         
@@ -127,8 +131,8 @@ class Fire:
                 to_add.add((self.x,self.y-1))
             return (None,(None,None),to_add)
         
-        choice = random.choice([-1,0,0,1])
-        if r > 0.8 and 0 <= self.x+choice and self.x + choice < cells_w and grid[self.y-1][self.x+choice] is None :
+        choice = random.choice([-1,0,1])
+        if r > 0.5 and 0 <= self.x+choice and self.x + choice < cells_w and grid[self.y-1][self.x+choice] is None :
             to_add.add((self.x,self.y))
             to_add.add((self.x+choice,self.y-1))
             grid[self.y-1][self.x+choice] = Fire(self.x+choice,self.y-1,255)
@@ -141,6 +145,9 @@ class Fire:
         return (True,(self.x,self.y),to_add) #if not moved
 
 class Water:
+
+    __slots__ = ('x', 'y', 'cells_w', 'cells_h','color','cur_life','base_life','move')
+
     def __init__(self,x,y,w,h,life=40):
         self.x = x
         self.y = y
