@@ -87,7 +87,20 @@ class Read_map:
 
         # créer la liste (x, y, color)
         return [(int(x), int(y), tuple(int(v)for v in c)) for x, y, c in zip(xs, ys, colors_active)]
+    
+    def return_sand(self):
+        mask_sand = (self.grid_type == self.type["SAND"])
+        bellow_empty = np.zeros_like(self.grid_type,bool)
+        bellow_empty[:-1,:] = (self.grid_type[1:,:] == self.type["EMPTY"])
 
+        falling = mask_sand & bellow_empty
+        self.grid_type[:-1,:][falling] = self.type["EMPTY"]
+        self.grid_type[1:,:][falling] = self.type["SAND"]
+
+        tmp = self.grid_color[:-1, :][falling].copy()
+        self.grid_color[:-1, :][falling] = self.grid_color[1:, :][falling]
+        self.grid_color[1:, :][falling] = tmp
+        
 '''class Read_map:
     def __init__(self, filename, size,canva_size):
         self.width = canva_size[0]
