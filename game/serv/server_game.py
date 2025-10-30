@@ -1,4 +1,4 @@
-from serv.in_game.read_map import Read_map
+from serv.in_game_test.read_map_test import Read_map
 import var #Fichier
 import pygame
 
@@ -28,12 +28,8 @@ class Server_game :
             print(fps)
 
     def return_chg(self):
-        return self.map.return_map()
+        return []
+        #return self.map.return_map()
 
     def init_canva(self):
-        l = []
-        for e in self.map.grid:
-            for el in e :
-                if el != None :
-                    l.append((el.x,el.y,el.color))
-        return l
+        return self.map.return_all()
