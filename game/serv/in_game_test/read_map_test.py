@@ -33,6 +33,8 @@ class Read_map:
         mask_Wood = (grid_pixels[:,:,0] == 0) & (grid_pixels[:,:,1] == 0) & (grid_pixels[:,:,2] == 0)
         mask_Fire = (grid_pixels[:,:,0] == 255) & (grid_pixels[:,:,1] == 0) & (grid_pixels[:,:,2] == 0)
 
+        mask_Sand[0,0] = True
+
         self.grid_type[mask_Sand]  = self.type["SAND"]
         self.grid_type[mask_Water] = self.type["WATER"]
         self.grid_type[mask_Fire]  = self.type["FIRE"]
@@ -86,21 +88,43 @@ class Read_map:
         colors_active = self.grid_color[ys, xs]  # shape = (num_active, 3) ou (num_active,4)
 
         # créer la liste (x, y, color)
-        return [(int(x), int(y), tuple(int(v)for v in c)) for x, y, c in zip(xs, ys, colors_active)]
+        return np.column_stack((xs, ys, colors_active)).tolist()#[(int(x), int(y), tuple(int(v)for v in c)) for x, y, c in zip(xs, ys, colors_active)]
     
     def return_sand(self):
         mask_sand = (self.grid_type == self.type["SAND"])
-        bellow_empty = np.zeros_like(self.grid_type,bool)
-        bellow_empty[:-1,:] = (self.grid_type[1:,:] == self.type["EMPTY"])
+        below_empty = np.zeros_like(self.grid_type, bool)
 
-        falling = mask_sand & bellow_empty
-        self.grid_type[:-1,:][falling] = self.type["EMPTY"]
-        self.grid_type[1:,:][falling] = self.type["SAND"]
+        below_empty[:-1, :] = (
+            (self.grid_type[1:, :] == self.type["EMPTY"]) |
+            (self.grid_type[1:, :] == self.type["WATER"])
+        )
 
-        tmp = self.grid_color[:-1, :][falling].copy()
-        self.grid_color[:-1, :][falling] = self.grid_color[1:, :][falling]
-        self.grid_color[1:, :][falling] = tmp
-        
+        falling = mask_sand & below_empty
+
+        # même taille que grid[:-1,:]
+        falling_up = falling[:-1, :]
+
+        # MAJ types
+        self.grid_type[:-1, :][falling_up] = self.type["EMPTY"]
+        self.grid_type[1:, :][falling_up] = self.type["SAND"]
+
+        # échange couleurs
+        tmp = self.grid_color[:-1, :][falling_up].copy()
+        self.grid_color[:-1, :][falling_up] = self.grid_color[1:, :][falling_up]
+        self.grid_color[1:, :][falling_up] = tmp
+
+        ys, xs = np.where(falling_up)
+        old_colors = self.grid_color[:-1, :][falling_up]
+        new_ys = ys + 1
+        new_colors = self.grid_color[1:, :][falling_up]
+
+        moved_cells = (
+            np.column_stack((xs, ys, old_colors)).tolist() +
+            np.column_stack((xs, new_ys, new_colors)).tolist()
+        )
+
+        return moved_cells
+
 '''class Read_map:
     def __init__(self, filename, size,canva_size):
         self.width = canva_size[0]

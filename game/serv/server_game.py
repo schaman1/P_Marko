@@ -25,10 +25,10 @@ class Server_game :
             
             fps = self.fpsClock.get_fps()
             #if fps < 60 : #Affiche le fps quand c'est critique
-            print(fps)
+            #print(fps)
 
     def return_chg(self):
-        return []
+        return self.map.return_sand()
         #return self.map.return_map()
 
     def init_canva(self):

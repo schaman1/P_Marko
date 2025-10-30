@@ -23,6 +23,9 @@ class Game :
             self.switch_cell(e)
 
     def switch_cell(self,el):
-        x,y,color = el
+        #print(el)
+        x,y,r,g,b,a = el
+        color = (r,g,b,a)
+        #print(color)
         self.canva.fill(color, self.rect_grid[y][x])
         #pygame.draw.rect(self.canva, color, self.rect_grid[y][x])
