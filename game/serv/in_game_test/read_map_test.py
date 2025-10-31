@@ -18,6 +18,9 @@ class Read_map:
         self.grid_temp = np.zeros((self.cells_h, self.cells_w), dtype=np.uint8) #Temperature
         self.grid_color = np.zeros((self.cells_h,self.cells_w,4), dtype=np.uint8)
 
+        #self.grid_test = np.zeros((self.cells_h,self.cells_w,4), dtype=np.uint8)
+        #self.grid_test[:,:] = [0,0,255,255]
+
         self.create_map()
 
     def create_map(self):
@@ -33,7 +36,7 @@ class Read_map:
         mask_Wood = (grid_pixels[:,:,0] == 0) & (grid_pixels[:,:,1] == 0) & (grid_pixels[:,:,2] == 0)
         mask_Fire = (grid_pixels[:,:,0] == 255) & (grid_pixels[:,:,1] == 0) & (grid_pixels[:,:,2] == 0)
 
-        mask_Sand[0,0] = True
+        mask_Sand[120,3] = True
 
         self.grid_type[mask_Sand]  = self.type["SAND"]
         self.grid_type[mask_Water] = self.type["WATER"]
@@ -92,54 +95,78 @@ class Read_map:
     
     def return_sand(self):
 
-        mask_sand = (self.grid_type == self.type["SAND"])
-        falling = self.empty_sand(mask_sand,0,1)
-        moved_cells = self.move(falling,0,1)
+        # --- Appels move ---
+        moved_cells_list = []
+        remaining_cell_local = (self.grid_type == self.type["SAND"])  # initialisation
 
-        mask_sand = (self.grid_type == self.type["SAND"])
-        falling = self.empty_sand(mask_sand,1,1)
-        moved_cells += self.move(falling,1,1)
+        for dx, dy in [(0, 1), (1, 1), (-1, 1)]:
+            moved_cells, remaining_cell_local = self.move(remaining_cell_local, dx, dy)
+            moved_cells_list.append(moved_cells)
 
-        mask_sand = (self.grid_type == self.type["SAND"])
-        falling = self.empty_sand(mask_sand,-1,1)
-        moved_cells += self.move(falling,-1,1)
+        # --- Empile toutes les cellules en un seul tableau numpy ---
+        all_moved_cells = np.vstack(moved_cells_list)
 
-        return moved_cells
-    
-    def empty_sand(self,mask_sand,dx,dy):
-        below_empty = np.zeros_like(self.grid_type, bool)
+        # --- Convertis en liste une seule fois ---
+        all_moved_cells_list = all_moved_cells.tolist()
 
-        bx = -dx if dx != 0 else None
+        return all_moved_cells_list
 
-        below_empty[:-dy, :bx] = (
-            (self.grid_type[dy:, dx:] == self.type["EMPTY"]) |
-            (self.grid_type[dy:, dx:] == self.type["WATER"])
+    def move(self, mask_sand, dx, dy):
+
+        # --- Création des slices corrects ---
+        if dx > 0:
+            dep_x = slice(None, -dx)
+            arr_x = slice(dx, None)
+        elif dx < 0:
+            dep_x = slice(-dx, None) #if dx != -self.cells_w else slice(None)  # pour éviter slice vide
+            arr_x = slice(None, dx)
+        else:  # dx == 0
+            dep_x = slice(None)
+            arr_x = slice(None)
+
+        dep_y = slice(None, -dy)
+        arr_y = slice(dy, None)
+        #H, W = self.grid_type.shape
+        empty = np.zeros_like(self.grid_type, bool)
+
+        # Détection du vide ou de l’eau en dessous
+
+        empty[dep_y,dep_x] = (
+            (self.grid_type[arr_y,arr_x] == self.type["EMPTY"]) |
+            (self.grid_type[arr_y,arr_x] == self.type["WATER"])
         )
-        falling = mask_sand & below_empty
-        return falling[:-dy,:bx]
-    
-    def move(self,falling,dx,dy):
-        # MAJ types
+        falling = mask_sand[dep_y,dep_x] & empty[dep_y,dep_x]
 
-        bx = -dx if dx != 0 else None
+        remaining_cell = mask_sand.copy()
+        remaining_cell[dep_y,dep_x] = mask_sand[dep_y,dep_x]&(~falling)
 
-        self.grid_type[:-dy, :bx][falling] = self.type["EMPTY"]
-        self.grid_type[dy:,dx:][falling] = self.type["SAND"]
+        # Aucune particule à déplacer
+        if not np.any(falling):
+            return ([],remaining_cell)
 
-        # échange couleurs
-        tmp = self.grid_color[:-dy, :bx][falling].copy()
-        self.grid_color[:-dy, :bx][falling] = self.grid_color[dy:, dx:][falling]
-        self.grid_color[dy:, dx:][falling] = tmp
+        # --- Mise à jour des types ---
+        self.grid_type[dep_y,dep_x][falling] = self.type["EMPTY"]
+        self.grid_type[arr_y,arr_x][falling] = self.type["SAND"]
 
+        # --- Mise à jour des couleurs ---
+        tmp = self.grid_color[dep_y,dep_x][falling].copy()
+        self.grid_color[dep_y,dep_x][falling] = self.grid_color[arr_y, arr_x][falling]
+        self.grid_color[arr_y, arr_x][falling] = tmp
+
+        # --- Retourner les cellules modifiées ---
         ys, xs = np.where(falling)
-        old_colors = self.grid_color[:-dy, :bx][falling]
-        new_ys = ys + dy
-        new_xs = xs + dx
-        new_colors = self.grid_color[dy:, dx:][falling]
-
+        offset_x = dx if dx < 0 else 0
+        new_ys, new_xs = ys + dy, xs + dx
+        old_colors = self.grid_color[dep_y,dep_x][falling]
+        new_colors = self.grid_color[arr_y, arr_x][falling]
+        #+ offset_x
+        moved_cells = np.vstack((
+            np.column_stack((xs - offset_x, ys, old_colors)),
+            np.column_stack((new_xs - offset_x, new_ys, new_colors))
+        ))
         return (
-            np.column_stack((xs, ys, old_colors)).tolist() +
-            np.column_stack((new_xs, new_ys, new_colors)).tolist()
+            moved_cells,
+            remaining_cell
         )
 
 '''class Read_map:
