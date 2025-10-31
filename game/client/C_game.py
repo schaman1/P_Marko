@@ -26,6 +26,7 @@ class Game :
         #print(el)
         x,y,r,g,b,a = el
         color = (r,g,b,a)
+        #x,y,color = el
         #print(color)
         self.canva.fill(color, self.rect_grid[y][x])
         #pygame.draw.rect(self.canva, color, self.rect_grid[y][x])

@@ -32,4 +32,10 @@ class Server_game :
         #return self.map.return_map()
 
     def init_canva(self):
+        #l = []
+        #for e in self.map.grid:
+        #    for el in e :
+        #        if el != None :
+        #            l.append((el.x,el.y,el.color))
+        #return l
         return self.map.return_all()
