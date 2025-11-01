@@ -1,99 +1,133 @@
-import pygame, numpy as np
-from serv.in_game.particles import Sand,Wood, Water, Fire
+import pygame
+import numpy as np
+from numba import njit
+from serv.in_game.particles import Sand, Wood, Water, Fire
 
 class Read_map:
-    def __init__(self,filename,size,canva_size):
-        self.width = canva_size[0]
-        self.height = canva_size[1]
+    def __init__(self, filename, size, canva_size):
+        self.width, self.height = canva_size
         self.cell_size = size
         self.cells_w = self.width // self.cell_size
         self.cells_h = self.height // self.cell_size
 
-        self.type = {"EMPTY":0,"SAND":1,"WATER":2,"WOOD":3,"FIRE":4}
+        self.type = {"EMPTY": 0, "SAND": 1, "WATER": 2, "WOOD": 3, "FIRE": 4}
 
         self.map = pygame.image.load(filename).convert()
         self.map = pygame.transform.scale(self.map, (self.width, self.height))
 
         self.grid_type = np.zeros((self.cells_h, self.cells_w), dtype=np.uint8)
-        self.grid_temp = np.zeros((self.cells_h, self.cells_w), dtype=np.uint8) #Temperature
-        self.grid_color = np.zeros((self.cells_h,self.cells_w,4), dtype=np.uint8)
-
-        #self.grid_test = np.zeros((self.cells_h,self.cells_w,4), dtype=np.uint8)
-        #self.grid_test[:,:] = [0,0,255,255]
+        self.grid_color = np.zeros((self.cells_h, self.cells_w, 4), dtype=np.uint8)
 
         self.create_map()
 
     def create_map(self):
-        img_np = pygame.surfarray.array3d(self.map)  # shape = (W, H, 3)
-        img_np = np.transpose(img_np, (1,0,2))   # swap axes pour (H,W,3)
+        img_np = np.transpose(pygame.surfarray.array3d(self.map), (1, 0, 2))
 
-        self.grid_color[:,:] = [0,0,0,0]
+        grid_pixels = img_np[0:self.height:self.cell_size, 0:self.width:self.cell_size]
 
-        # on prend le pixel en haut à gauche de chaque bloc
-        grid_pixels = img_np[0:self.height:self.cell_size, 0:self.width:self.cell_size]  # shape = (grid_h, grid_w, 3)
-        mask_Sand = (grid_pixels[:,:,0] == 255) & (grid_pixels[:,:,1] == 255) & (grid_pixels[:,:,2] == 0)
-        mask_Water = (grid_pixels[:,:,0] == 0) & (grid_pixels[:,:,1] == 0) & (grid_pixels[:,:,2] == 255)
-        mask_Wood = (grid_pixels[:,:,0] == 0) & (grid_pixels[:,:,1] == 0) & (grid_pixels[:,:,2] == 0)
-        mask_Fire = (grid_pixels[:,:,0] == 255) & (grid_pixels[:,:,1] == 0) & (grid_pixels[:,:,2] == 0)
+        mask_sand = (grid_pixels[:, :, 0] == 255) & (grid_pixels[:, :, 1] == 255) & (grid_pixels[:, :, 2] == 0)
+        mask_water = (grid_pixels[:, :, 0] == 0) & (grid_pixels[:, :, 1] == 0) & (grid_pixels[:, :, 2] == 255)
+        mask_wood = (grid_pixels[:, :, 0] == 0) & (grid_pixels[:, :, 1] == 0) & (grid_pixels[:, :, 2] == 0)
+        mask_fire = (grid_pixels[:, :, 0] == 255) & (grid_pixels[:, :, 1] == 0) & (grid_pixels[:, :, 2] == 0)
 
-        mask_Sand[120,3] = True
+        # Exemple de masque spécifique
+        #mask_sand[120, 3] = True
 
-        self.grid_type[mask_Sand]  = self.type["SAND"]
-        self.grid_type[mask_Water] = self.type["WATER"]
-        self.grid_type[mask_Fire]  = self.type["FIRE"]
-        self.grid_type[mask_Wood] = self.type["WOOD"]
+        self.grid_type[mask_sand] = self.type["SAND"]
+        self.grid_type[mask_water] = self.type["WATER"]
+        self.grid_type[mask_wood] = self.type["WOOD"]
+        self.grid_type[mask_fire] = self.type["FIRE"]
 
-        self.grid_color[mask_Sand] = self.random_color_sand(mask_Sand)
-        self.grid_color[mask_Water] = self.random_color_water(mask_Water)
-        self.grid_color[mask_Wood] = self.random_color_wood(mask_Wood)
-        self.grid_color[mask_Fire] = self.random_color_fire(mask_Fire)
+        self.grid_color[mask_sand] = self.random_color(mask_sand.sum(), (150, 200), (75, 140), (0, 0))
+        self.grid_color[mask_water] = self.random_color(mask_water.sum(), (0, 20), (0, 20), (200, 255))
+        self.grid_color[mask_wood] = self.random_color(mask_wood.sum(), (78, 88), (31, 41), (0, 0))
+        self.grid_color[mask_fire] = self.random_color(mask_fire.sum(), (180, 255), (0, 20), (0, 0))
 
-    def random_color_sand(self,mask_sand):
-        num_cells = np.sum(mask_sand)  # nombre de cellules à colorer
-        r = np.random.randint(150, 200, size=num_cells, dtype=np.uint8)
-        g = np.random.randint(75, 140, size=num_cells, dtype=np.uint8)
-        b = np.zeros(num_cells,dtype=np.uint8)
-        a = np.full(num_cells, 255, dtype=np.uint8)
-        return np.stack([r, g, b,a], axis=1)
-    
-    def random_color_water(self,mask_water):
-        num_cells = np.sum(mask_water)  # nombre de cellules à colorer
-        r = np.random.randint(0, 20, size=num_cells, dtype=np.uint8)
-        g = np.random.randint(0, 20, size=num_cells, dtype=np.uint8)
-        b = np.random.randint(200, 255, size=num_cells, dtype=np.uint8)
-        a = np.full(num_cells, 255, dtype=np.uint8)
-        return np.stack([r, g, b,a], axis=1)
-    
-    def random_color_wood(self,mask_wood):
-        num_cells = np.sum(mask_wood)  # nombre de cellules à colorer
-        r = np.random.randint(78, 88, size=num_cells, dtype=np.uint8)
-        g = np.random.randint(31, 41, size=num_cells, dtype=np.uint8)
-        b = np.zeros(num_cells,dtype=np.uint8)
-        a = np.full(num_cells, 255, dtype=np.uint8)
-        return np.stack([r, g, b,a], axis=1)
-    
-    def random_color_fire(self,mask_fire):
-        num_cells = np.sum(mask_fire)  # nombre de cellules à colorer
-        r = np.random.randint(180, 256, size=num_cells, dtype=np.uint8)
-        g = np.random.randint(0, 20, size=num_cells, dtype=np.uint8)
-        b = np.zeros(num_cells,dtype=np.uint8)
-        a = np.full(num_cells, 255, dtype=np.uint8)
-        return np.stack([r, g, b,a], axis=1)
-    
+    def random_color(self, num, r_range, g_range, b_range):
+        r = np.random.randint(r_range[0], r_range[1]+1, num, dtype=np.uint8)
+        g = np.random.randint(g_range[0], g_range[1]+1, num, dtype=np.uint8)
+        b = np.random.randint(b_range[0], b_range[1]+1, num, dtype=np.uint8)
+        a = np.full(num, 255, dtype=np.uint8)
+        return np.stack([r, g, b, a], axis=1)
+
     def return_all(self):
-        # masque des cellules actives (non vide)
-        mask_active = (self.grid_type != self.type["EMPTY"])  # bool array
-
-        # récupérer les coordonnées (y,x)
+        mask_active = self.grid_type != self.type["EMPTY"]
         ys, xs = np.where(mask_active)
+        colors = self.grid_color[ys, xs]
+        return np.column_stack((xs, ys, colors)).tolist()
 
-        # récupérer les couleurs correspondantes
-        colors_active = self.grid_color[ys, xs]  # shape = (num_active, 3) ou (num_active,4)
-
-        # créer la liste (x, y, color)
-        return np.column_stack((xs, ys, colors_active)).tolist()#[(int(x), int(y), tuple(int(v)for v in c)) for x, y, c in zip(xs, ys, colors_active)]
-    
     def return_sand(self):
+        moved_cells = move_sand_fast(
+            self.grid_type,
+            self.grid_color,
+            self.type["SAND"],
+            self.type["EMPTY"],
+            self.type["WATER"]
+        )
+        return moved_cells
+
+from numba import njit
+import numpy as np
+
+@njit
+def move_sand_fast(grid_type, grid_color, type_sand, type_empty, type_water):
+    H, W = grid_type.shape
+    moved_cells = []
+
+    for y in range(H - 2, -1, -1):
+        for x in range(W):
+            if grid_type[y, x] != type_sand:
+                continue
+
+            ny = y + 1
+
+            # test bas, bas-gauche, bas-droite
+            if grid_type[ny, x] in (type_empty, type_water):
+                nx = x
+            elif x > 0 and grid_type[ny, x - 1] in (type_empty, type_water):
+                nx = x - 1
+            elif x < W - 1 and grid_type[ny, x + 1] in (type_empty, type_water):
+                nx = x + 1
+            else:
+                continue
+
+            # swap type
+            tmp = grid_type[y, x]
+            grid_type[y, x] = grid_type[ny, nx]
+            grid_type[ny, nx] = tmp
+
+            # swap couleur
+            tmpc0 = grid_color[y, x, 0]
+            tmpc1 = grid_color[y, x, 1]
+            tmpc2 = grid_color[y, x, 2]
+            tmpc3 = grid_color[y, x, 3]
+
+            grid_color[y, x, 0] = grid_color[ny, nx, 0]
+            grid_color[y, x, 1] = grid_color[ny, nx, 1]
+            grid_color[y, x, 2] = grid_color[ny, nx, 2]
+            grid_color[y, x, 3] = grid_color[ny, nx, 3]
+
+            grid_color[ny, nx, 0] = tmpc0
+            grid_color[ny, nx, 1] = tmpc1
+            grid_color[ny, nx, 2] = tmpc2
+            grid_color[ny, nx, 3] = tmpc3
+
+            # on enregistre les 2 cases modifiées
+            moved_cells.append((x, y,
+                                grid_color[y, x, 0],
+                                grid_color[y, x, 1],
+                                grid_color[y, x, 2],
+                                grid_color[y, x, 3]))
+            moved_cells.append((nx, ny,
+                                grid_color[ny, nx, 0],
+                                grid_color[ny, nx, 1],
+                                grid_color[ny, nx, 2],
+                                grid_color[ny, nx, 3]))
+
+    return moved_cells
+
+
+    '''def return_sandi(self):
 
         # --- Appels move ---
         moved_cells_list = []
@@ -142,7 +176,7 @@ class Read_map:
 
         # Aucune particule à déplacer
         if not np.any(falling):
-            return ([],remaining_cell)
+            return (np.empty((0, 6), dtype=np.uint8),remaining_cell)
 
         # --- Mise à jour des types ---
         self.grid_type[dep_y,dep_x][falling] = self.type["EMPTY"]
@@ -169,7 +203,8 @@ class Read_map:
             remaining_cell
         )
 
-'''class Read_map:
+
+class Read_map:
     def __init__(self, filename, size,canva_size):
         self.width = canva_size[0]
         self.height = canva_size[1]

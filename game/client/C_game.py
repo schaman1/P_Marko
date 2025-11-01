@@ -28,5 +28,8 @@ class Game :
         color = (r,g,b,a)
         #x,y,color = el
         #print(color)
-        self.canva.fill(color, self.rect_grid[y][x])
+        try : 
+            self.canva.fill(color, self.rect_grid[y][x])
+        except : 
+            None
         #pygame.draw.rect(self.canva, color, self.rect_grid[y][x])
