@@ -1,7 +1,7 @@
-import pygame, heapq, random
-
+import pygame, heapq
 import numpy as np
 from numba import njit
+from numba.typed import List
 from serv.in_game.particles import Sand, Wood, Water, Fire
 
 class Read_map:
@@ -45,7 +45,7 @@ class Read_map:
         self.grid_color[mask_wood] = self.random_color(mask_wood.sum(), (78, 88), (31, 41), (0, 0))
         self.grid_color[mask_fire] = self.random_color(mask_fire.sum(), (180, 255), (0, 20), (0, 0))
 
-        self.temp[mask_sand] = -20
+        self.temp[mask_sand] = -50
         self.temp[mask_water] = -255
         self.temp[mask_fire] = 255
         self.temp[mask_wood] = 255
@@ -67,55 +67,61 @@ class Read_map:
         moved_cells = move_sand_fast(
             self.grid_type,
             self.grid_color,
-            self.type,
-            self.temp
+            self.temp,
+            self.type["EMPTY"],
+            self.type["SAND"],
+            self.type["WOOD"],
+            self.type["WATER"],
+            self.type["FIRE"],
         )
         return moved_cells
+    
+@njit
+def swap_cell(temperature,grid_type,grid_color,x,y,nx,ny):
+    tmp,degre = grid_type[y, x],temperature[y,x]
+    grid_type[y, x] = grid_type[ny, nx]
+    temperature[y,x] = temperature[ny,nx]
+    grid_type[ny, nx] = tmp
+    temperature[ny,nx] = degre
 
-from numba import njit
-import numpy as np
+
+    # swap couleur
+    for c in range(4):
+        tmpc = grid_color[y, x, c]
+        grid_color[y, x, c] = grid_color[ny, nx, c]
+        grid_color[ny, nx, c] = tmpc
+
 
 @njit
-def move_sand_fast(grid_type, grid_color, type, temperature):
+def move_sand_fast(grid_type, grid_color, temperature, EMPTY,SAND,WOOD,WATER,FIRE):
     H, W = grid_type.shape
     moved_cells = []
 
-    for y in range(H - 2, -1, -1):
+    for y in range(H - 1, -1, -1):
         for x in range(W):
-            if grid_type[y, x] == type["SAND"]:
+            if grid_type[y, x] == SAND:
 
                 ny = y + 1
+                if ny >= H : 
+                    continue
 
                 # test bas, bas-gauche, bas-droite
-                if grid_type[ny, x] in (type["EMPTY"], type["WATER"]):
+                if grid_type[ny, x] in (EMPTY, WATER, FIRE):
                     nx = x
-                elif x > 0 and grid_type[ny, x - 1] in (type["EMPTY"], type["WATER"]):
+                elif x > 0 and grid_type[ny, x - 1] in (EMPTY, WATER, FIRE):
                     nx = x - 1
-                elif x < W - 1 and grid_type[ny, x + 1] in (type["EMPTY"], type["WATER"]):
+                elif x < W - 1 and grid_type[ny, x + 1] in (EMPTY, WATER, FIRE):
                     nx = x + 1
                 else:
                     continue
 
                 # swap type
-                tmp = grid_type[y, x]
-                grid_type[y, x] = grid_type[ny, nx]
-                grid_type[ny, nx] = tmp
-
-                # swap couleur
-                tmpc0 = grid_color[y, x, 0]
-                tmpc1 = grid_color[y, x, 1]
-                tmpc2 = grid_color[y, x, 2]
-                tmpc3 = grid_color[y, x, 3]
-
-                grid_color[y, x, 0] = grid_color[ny, nx, 0]
-                grid_color[y, x, 1] = grid_color[ny, nx, 1]
-                grid_color[y, x, 2] = grid_color[ny, nx, 2]
-                grid_color[y, x, 3] = grid_color[ny, nx, 3]
-
-                grid_color[ny, nx, 0] = tmpc0
-                grid_color[ny, nx, 1] = tmpc1
-                grid_color[ny, nx, 2] = tmpc2
-                grid_color[ny, nx, 3] = tmpc3
+                if grid_type[ny,x] == FIRE:
+                    temperature[ny,x] = 0
+                    grid_type[ny,x] = EMPTY
+                    grid_color[ny,x] = (0,0,0,0)
+                #else :
+                swap_cell(temperature,grid_type,grid_color,x,y,nx,ny)
 
                 # on enregistre les 2 cases modifiées
                 moved_cells.append((x, y,
@@ -129,26 +135,39 @@ def move_sand_fast(grid_type, grid_color, type, temperature):
                                     grid_color[ny, nx, 2],
                                     grid_color[ny, nx, 3]))
                 
-            if grid_type[y,x] == type["FIRE"]:
-                new_temp = 0
-                new_life = []
+            if grid_type[y,x] == FIRE:
+                new_temp = temperature[y,x]
+                #new_life = np.zeros(4,dtype = np.int16)
                 for i, j in [(-1,0),(1,0),(0,-1),(0,1)]:
-                    temp = temperature[y+i,x+j]
-                    if temp < 0 :
-                        new_temp -= temp
-                    new_life.append(temperature[y+i,x+j])
+                    dy = y + i
+                    dx = x + j
+                    if dy < 0 or dy >= H or dx < 0 or dx >= W :
+                        new_temp -= 255 
+                        continue
 
-                    if grid_type[y+i,x+j] == type["WOOD"]:
-                        grid_type[y+i,x+j] = type["FIRE"]
-                        #grid[self.y+i][self.x+j] = Fire(self.x+j,self.y+i,255)
+                    temp = temperature[dy,dx]
+                    #if temp < 0 :
+                    new_temp += temp
 
-                new_temp += np.mean(np.sort(np.array(new_life))[-4:]) - 6
+                    if grid_type[dy,dx] == WOOD:
+                        if np.random.randint(0,100) > 97 :
+                            temperature[dy,dx] = 255
+                            grid_type[dy,dx] = FIRE
+                            grid_color[dy,dx] = (np.random.randint(180,255),np.random.randint(0,20),0,255)
+                            moved_cells.append((dx, dy,
+                                                grid_color[dy,dx, 0],
+                                                grid_color[dy,dx, 1],
+                                                grid_color[dy,dx, 2],
+                                                grid_color[dy,dx, 3]))
+                        #grid[self.dx][self.x+j] = Fire(self.dx,self.y+i,255)
+
+                new_temp = (new_temp)//5-6#np.mean(new_life) - 6
                 temperature[y,x] = new_temp
-                grid_color[x,y,3] = new_temp
+                grid_color[y,x,3] = new_temp
 
                 if temperature[y,x] < 20 :
                     temperature[y,x] = 0
-                    #grid_type[y,x] = Empty
+                    grid_type[y,x] = EMPTY
                     grid_color[y,x] = (0,0,0,0)
                     # on enregistre les cases modifiées
                     moved_cells.append((x, y,
@@ -157,21 +176,23 @@ def move_sand_fast(grid_type, grid_color, type, temperature):
                                         grid_color[y, x, 2],
                                         grid_color[y, x, 3]))
                     continue
+                
 
-                choice = np.random.randint(-1, 2)
-                if 0< x + choice and x+choice < W and 0<y -1 :
-                    dy = y-1
-                    dx = x + choice
-                    temperature[dy,dx] = 255
-                    grid_type[dy,dx] = ["FIRE"]
-                    grid_color[dy,dx] = (random.randint(180,255),random.randint(0,20),0,255)
-                    # on enregistre les cases modifiées
-                    moved_cells.append((dx, dy,
-                                        grid_color[dy,dx, 0],
-                                        grid_color[dy,dx, 1],
-                                        grid_color[dy,dx, 2],
-                                        grid_color[dy,dx, 3]))
-                    
+                if np.random.randint(0,101) > 50:
+                    choice = np.random.randint(-1, 2)
+                    if 0< x + choice and x+choice < W and 0<y -1 and grid_type[y-1,x+choice] == EMPTY:
+                        dy = y-1
+                        dx = x + choice
+                        temperature[dy,dx] = 255
+                        grid_type[dy,dx] = FIRE
+                        grid_color[dy,dx] = (np.random.randint(180,255),np.random.randint(0,20),0,255)
+                        # on enregistre les cases modifiées
+                        moved_cells.append((dx, dy,
+                                            grid_color[dy,dx, 0],
+                                            grid_color[dy,dx, 1],
+                                            grid_color[dy,dx, 2],
+                                            grid_color[dy,dx, 3]))
+                        
                 moved_cells.append((x, y,
                                     grid_color[y, x, 0],
                                     grid_color[y, x, 1],
